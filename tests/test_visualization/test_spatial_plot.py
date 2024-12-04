@@ -101,11 +101,10 @@ class SpatialPlotTestCase(unittest.TestCase):
                 annotation='annotation4'
             )
         error_msg = str(cm.exception)
-        err_msg_exp = 'The annotation "annotation4"' +\
-                      'not found in the dataset.' +\
-                      ' Existing annotations are: annotation1,' +\
-                      ' annotation2, annotation3'
+        err_msg_exp = 'The annotation "annotation4" not found in the dataset.' + \
+                    ' Existing annotations are: annotation1, annotation2, annotation3'
         self.assertEqual(error_msg, err_msg_exp)
+
 
     def test_invalid_feature_name(self):
         # Test when feature name is not found in the layer
@@ -201,16 +200,15 @@ class SpatialPlotTestCase(unittest.TestCase):
                 show,
                 **kwargs):
             # Assert that the inputs match the expected values
-            self.assertEqual(layer, None)
-            self.assertEqual(feature, 'Intensity_10')
-            self.assertEqual(spot_size, self.spot_size)
-            self.assertEqual(alpha, self.alpha)
-            self.assertEqual(vmin, 0)
-            self.assertEqual(vmax, 100)
-            self.assertIsInstance(ax, plt.Axes)
-            self.assertFalse(show)
-            # Return a list containing the ax object to mimic
-            # the behavior of the spatial function
+            self.assertEqual(layer, None)  # Ensuring layer is None as expected
+            self.assertEqual(feature, 'Intensity_10')  # Checking feature value
+            self.assertEqual(spot_size, self.spot_size)  # Checking spot size
+            self.assertEqual(alpha, self.alpha)  # Checking alpha
+            self.assertEqual(vmin, 0)  # Checking vmin
+            self.assertEqual(vmax, 100)  # Checking vmax
+            self.assertIsInstance(ax, plt.Axes)  # Ensuring ax is an Axes object
+            self.assertFalse(show)  # Ensuring show is False
+            # Return a list containing the ax object to mimic the behavior of the spatial function
             return [ax]
 
         # Mock the spatial function with the mock_spatial function
@@ -222,7 +220,7 @@ class SpatialPlotTestCase(unittest.TestCase):
             rect=[0, 0, 1, 1]
         )
 
-        # Call the spatial_plot function with the ax object
+        # Call the spatial_plot function with the ax object and ensure layer is None
         returned_ax_list = spatial_plot(
             adata=self.adata,
             spot_size=self.spot_size,
@@ -230,11 +228,11 @@ class SpatialPlotTestCase(unittest.TestCase):
             feature='Intensity_10',
             vmin=0,
             vmax=100,
-            ax=ax
+            ax=ax,
+            layer=None  # Explicitly passing None to layer
         )
 
-        # Assert that the spatial_plot function returned a list
-        # containing an Axes object with the same properties
+        # Assert that the spatial_plot function returned a list containing an Axes object with the same properties
         returned_ax = returned_ax_list[0]
         self.assertEqual(returned_ax.get_title(), ax.get_title())
         self.assertEqual(returned_ax.get_xlabel(), ax.get_xlabel())
@@ -242,6 +240,7 @@ class SpatialPlotTestCase(unittest.TestCase):
 
         # Restore the original spatial function
         del spatial_plot.__globals__['sc.pl.spatial']
+
 
     def test_spatial_plot_combos_feature(self):
         # Define the parameter combinations to test

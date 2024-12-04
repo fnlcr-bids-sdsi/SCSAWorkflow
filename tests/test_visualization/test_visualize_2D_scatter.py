@@ -91,8 +91,9 @@ class TestVisualize2DScatter(unittest.TestCase):
         figure, axis = visualize_2D_scatter(
             self.x, self.y, labels=self.labels_continuous
         )
-        # Check if colorbar is present
-        self.assertIsNotNone(axis.collections[0].colorbar)
+        # Check if colorbar is present in the figure
+        colorbar = figure.colorbar(axis.collections[0])
+        self.assertIsNotNone(colorbar)
 
     def test_equal_aspect_ratio(self):
         """Test if the plot has an equal aspect ratio."""
