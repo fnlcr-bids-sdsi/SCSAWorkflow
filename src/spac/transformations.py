@@ -11,7 +11,8 @@ import umap as umap_lib
 from scipy.sparse import issparse
 from typing import List, Union, Optional
 from numpy.lib import NumpyVersion
-
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import LabelEncoder
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
@@ -101,6 +102,107 @@ def phenograph_clustering(
     adata.obs[output_annotation] = pd.Categorical(phenograph_out[0])
     adata.uns["phenograph_features"] = features
 
+def knn_clustering(
+        adata,
+        features,
+        annotation,
+        layer=None,
+        k=50,
+        output_annotation="knn",
+        associated_table=None,
+        missing_label = "no_label",
+        **kwargs):
+    """
+    Calculate knn clusters using sklearn KNeighborsClassifier
+
+    The function will add these two attributes to `adata`:
+    `.obs[output_annotation]`
+        The assigned int64 class labels by KNeighborsClassifier
+
+    `.uns[output_annotation_features]`
+        The features used to calculate the knn clusters
+
+    Parameters
+    ----------
+    adata : anndata.AnnData
+       The AnnData object.
+
+    features : list of str
+        The variables that would be included in fitting the KNN classifier.
+    
+    annotation : str
+        The name of the annotation used for classifying the data
+
+    layer : str, optional
+        The layer to be used.
+
+    k : int, optional
+        The number of nearest neighbor to be used in creating the graph.
+
+    output_annotation : str, optional
+        The name of the output layer where the clusters are stored.
+
+    associated_table : str, optional
+        If set, use the corresponding key `adata.obsm` to calcuate the
+        clustering. Takes priority over the layer argument.
+
+    missing_label : str or int
+        The value of missing annotations in adata.obs[annotation]
+
+    Returns
+    -------
+    None
+        adata is updated inplace 
+    """
+
+    # read in data, validate annotation in the call here
+    _validate_transformation_inputs(
+        adata=adata,
+        layer=layer,
+        associated_table=associated_table,
+        features=features,
+        annotation=annotation,
+    )
+
+    if not isinstance(k, int) or k <= 0:
+        raise ValueError(f"`k` must be a positive integer. Received value: `{k}`")
+    
+    data = _select_input_features(
+        adata=adata,
+        layer=layer,
+        associated_table=associated_table,
+        features=features
+    )
+
+    # boolean masks for labeled and unlabeled data
+    annotation_data = adata.obs[annotation]
+    annotation_mask = annotation_data != missing_label
+    annotation_mask &= pd.notnull(annotation_data)
+    unlabeled_mask = ~annotation_mask
+
+    # check that annotation is non-trivial
+    if all(annotation_mask):
+        raise ValueError(f"All cells are labeled in the annotation `{annotation}`. Please provide a mix of labeled and unlabeled data.")
+    elif not any(annotation_mask):
+        raise ValueError(f"No cells are labeled in the annotation `{annotation}`. Please provide a mix of labeled and unlabeled data.")
+
+    # fit knn classifier to labeled data and predict on unlabeled data     
+    data_labeled = data[annotation_mask]
+    label_encoder = LabelEncoder()
+    annotation_labeled = label_encoder.fit_transform(annotation_data[annotation_mask])
+    
+    classifier = KNeighborsClassifier(n_neighbors = k, **kwargs)
+    classifier.fit(data_labeled, annotation_labeled)
+    
+    data_unlabeled = data[unlabeled_mask]
+    knn_predict = classifier.predict(data_unlabeled)
+    predicted_labels = label_encoder.inverse_transform(knn_predict)
+
+    # format output and place predictions/data in right location
+    adata.obs[output_annotation] = np.nan  
+    adata.obs[output_annotation][unlabeled_mask] = predicted_labels
+    adata.obs[output_annotation][annotation_mask] = annotation_data[annotation_mask]
+    adata.uns[f"{output_annotation}_features"] = features
 
 def get_cluster_info(adata, annotation, features=None, layer=None):
     """
@@ -314,7 +416,8 @@ def _validate_transformation_inputs(
         adata: anndata,
         layer: Optional[str] = None,
         associated_table: Optional[str] = None,
-        features: Optional[Union[List[str], str]] = None
+        features: Optional[Union[List[str], str]] = None,
+        annotation: Optional[str] = None,
         ) -> None:
     """
     Validate inputs for transformation functions.
@@ -329,6 +432,8 @@ def _validate_transformation_inputs(
         Name of the key in `obsm` that contains the numpy array.
     features : list of str or str, optional
         Names of features to use for transformation.
+    annotation: str, optional
+        Name of annotation column in `obs` that contains class labels
 
     Raises
     ------
@@ -352,6 +457,9 @@ def _validate_transformation_inputs(
 
     if features is not None:
         check_feature(adata, features=features)
+    
+    if annotation is not None:
+        check_annotation(adata, annotations=annotation)
 
 
 def _select_input_features(adata: anndata,
