@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spac.phenotyping &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">spac.phenotyping</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for spac.phenotyping</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="is_binary_0_1">
+<a class="viewcode-back" href="../../spac.html#spac.phenotyping.is_binary_0_1">[docs]</a>
+<span class="k">def</span> <span class="nf">is_binary_0_1</span><span class="p">(</span><span class="n">column</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a pandas Series contains only binary values (0 and 1).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    column : pandas.Series</span>
+<span class="sd">        The pandas Series to check.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the Series contains only 0 and 1, False otherwise.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function considers a Series to be binary if it contains exactly</span>
+<span class="sd">    the values 0 and 1, and no other values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unique_values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">unique_values</span> <span class="o">==</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="decode_phenotype">
+<a class="viewcode-back" href="../../spac.html#spac.phenotyping.decode_phenotype">[docs]</a>
+<span class="k">def</span> <span class="nf">decode_phenotype</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">phenotype_code</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a phenotype code into a dictionary mapping</span>
+<span class="sd">    feature (marker) names to values for that marker&#39;s</span>
+<span class="sd">    classification as &#39;+&#39; or &#39;-&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        The DataFrame containing the columns that will be used to decode</span>
+<span class="sd">        the phenotype.</span>
+<span class="sd">    phenotype_code : str</span>
+<span class="sd">        The phenotype code string, which should end with &#39;+&#39; or &#39;-&#39;.</span>
+<span class="sd">    **kwargs : keyword arguments</span>
+<span class="sd">        Optional keyword arguments to specify prefix and suffix to be added</span>
+<span class="sd">        to the column names.</span>
+<span class="sd">        - prefix : str, optional</span>
+<span class="sd">            Prefix to be added to the column names for the</span>
+<span class="sd">            feature classification. Default is &#39;&#39;.</span>
+<span class="sd">        - suffix : str, optional</span>
+<span class="sd">            Suffix to be added to the column names for the</span>
+<span class="sd">            feature classification. Default is &#39;&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary where the keys are column names and the values are the</span>
+<span class="sd">        corresponding phenotype classification.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the phenotype code does not end with &#39;+&#39; or &#39;-&#39; or if any columns</span>
+<span class="sd">        specified in the phenotype code do not exist in the DataFrame.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function splits the phenotype code on &#39;+&#39; and &#39;-&#39; characters to</span>
+<span class="sd">    determine the phenotype columns and values. It checks if the columns</span>
+<span class="sd">    exist in the DataFrame and whether they are binary or string types to</span>
+<span class="sd">    properly map values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">re</span>
+    <span class="c1"># The phenotype code should end with &#39;+&#39; or &#39;-&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">phenotype_code</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">phenotype_code</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;The passed phenotype code &quot;</span><span class="si">{</span><span class="n">phenotype_code</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+                <span class="s1">&#39; should end with &quot;+&quot; or &quot;-&quot;&#39;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Split the phenotype definition on &#39;+&#39; and &#39;-&#39; characters</span>
+    <span class="n">phenotypes</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\+|-&#39;</span><span class="p">,</span> <span class="n">phenotype_code</span><span class="p">)</span>
+    <span class="n">phenotypes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;suffix&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">phenotypes_columns</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">name</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">phenotypes</span><span class="p">]</span>
+
+    <span class="n">existing_columns</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">phenotypes_columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing_columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;The feature &quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot; does not exist in the input table.&#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39; Existing columns are &quot;</span><span class="si">{</span><span class="n">existing_columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="n">phenotype_values</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[A-Za-z0-9]+[+-]&#39;</span><span class="p">,</span> <span class="n">phenotype_code</span><span class="p">)</span>
+
+    <span class="n">phenotype_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">phenotype_values</span><span class="p">,</span> <span class="n">phenotypes_columns</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_string_dtype</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]):</span>
+            <span class="n">phenotype_dict</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">is_binary_0_1</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">):</span>
+                <span class="n">phenotype_dict</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">):</span>
+                <span class="n">phenotype_dict</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">phenotype_dict</span></div>
+
+
+
+<div class="viewcode-block" id="generate_phenotypes_dict">
+<a class="viewcode-back" href="../../spac.html#spac.phenotyping.generate_phenotypes_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">generate_phenotypes_dict</span><span class="p">(</span><span class="n">data_df</span><span class="p">,</span> <span class="n">phenotypes_df</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a dictionary of phenotype names to their corresponding</span>
+<span class="sd">    decoding rules.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_df : pandas.DataFrame</span>
+<span class="sd">        The DataFrame containing the columns that will be used to decode</span>
+<span class="sd">        the phenotypes.</span>
+<span class="sd">    phenotypes_df : pandas.DataFrame</span>
+<span class="sd">        A DataFrame containing phenotype definitions with columns:</span>
+<span class="sd">        - &quot;phenotype_name&quot; : str</span>
+<span class="sd">            The name of the phenotype.</span>
+<span class="sd">        - &quot;phenotype_code&quot; : str</span>
+<span class="sd">            The code used to decode the phenotype.</span>
+<span class="sd">    prefix : str, optional</span>
+<span class="sd">        Prefix to be added to the column names. Default is &#39;&#39;.</span>
+<span class="sd">    suffix : str, optional</span>
+<span class="sd">        Suffix to be added to the column names. Default is &#39;&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary where the keys are phenotype names and the values are</span>
+<span class="sd">        dictionaries mapping column names to values.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function iterates over each row in the `phenotypes_df` DataFrame and</span>
+<span class="sd">    decodes the phenotype using the `decode_phenotype` function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_phenotypes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">phenotypes_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">phenotype_name</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;phenotype_name&quot;</span><span class="p">]</span>
+        <span class="n">phenotype_code</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;phenotype_code&quot;</span><span class="p">]</span>
+        <span class="n">all_phenotypes</span><span class="p">[</span><span class="n">phenotype_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">decode_phenotype</span><span class="p">(</span>
+            <span class="n">data_df</span><span class="p">,</span>
+            <span class="n">phenotype_code</span><span class="p">,</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+            <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_phenotypes</span></div>
+
+
+
+<div class="viewcode-block" id="apply_phenotypes">
+<a class="viewcode-back" href="../../spac.html#spac.phenotyping.apply_phenotypes">[docs]</a>
+<span class="k">def</span> <span class="nf">apply_phenotypes</span><span class="p">(</span><span class="n">data_df</span><span class="p">,</span> <span class="n">phenotypes_dic</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add binary columns to the DataFrame indicating if each cell matches a</span>
+<span class="sd">    phenotype.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_df : pandas.DataFrame</span>
+<span class="sd">        The DataFrame to which binary phenotype columns will be added.</span>
+<span class="sd">    phenotypes_dic : dict</span>
+<span class="sd">        A dictionary where the keys are phenotype names and the values are</span>
+<span class="sd">        dictionaries mapping column names to values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary where the keys are phenotype names and the values are</span>
+<span class="sd">        the counts of rows that match each phenotype.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function creates binary columns in the DataFrame for each phenotype</span>
+<span class="sd">    and counts the number of rows matching each phenotype.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">return_dic</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">phenotype</span><span class="p">,</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">phenotypes_dic</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">matching_rows</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">data_df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+            <span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+            <span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">count_matching_rows</span> <span class="o">=</span> <span class="n">matching_rows</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">return_dic</span><span class="p">[</span><span class="n">phenotype</span><span class="p">]</span> <span class="o">=</span> <span class="n">count_matching_rows</span>
+
+        <span class="n">data_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">matching_rows</span><span class="p">,</span> <span class="n">phenotype</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">data_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">matching_rows</span><span class="p">,</span> <span class="n">phenotype</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">return_dic</span></div>
+
+
+
+<div class="viewcode-block" id="combine_phenotypes">
+<a class="viewcode-back" href="../../spac.html#spac.phenotyping.combine_phenotypes">[docs]</a>
+<span class="k">def</span> <span class="nf">combine_phenotypes</span><span class="p">(</span><span class="n">data_df</span><span class="p">,</span> <span class="n">phenotype_columns</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combine multiple binary phenotype columns into a new column in a vectorized manner.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_df : pandas.DataFrame</span>
+<span class="sd">        DataFrame containing the phenotype columns.</span>
+<span class="sd">    phenotype_columns : list of str</span>
+<span class="sd">        List of binary phenotype column names.</span>
+<span class="sd">    multiple : bool, optional</span>
+<span class="sd">        Whether to concatenate the names of multiple positive phenotypes.</span>
+<span class="sd">        If False, all multiple positive phenotypes are labeled as</span>
+<span class="sd">        &quot;no_label&quot;. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Series</span>
+<span class="sd">        A Series representing the combined phenotype for each row.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create a mask for each phenotype column where values are 1 (positive)</span>
+    <span class="n">phenotype_masks</span> <span class="o">=</span> <span class="n">data_df</span><span class="p">[</span><span class="n">phenotype_columns</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="c1"># Create a series of phenotype names with a comma and space</span>
+    <span class="c1"># after each name. That series will be used to join names</span>
+    <span class="c1"># of positive phenotypes in the vectorized operation below.</span>
+    <span class="n">phenotypes_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">phenotype_columns</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span>
+
+    <span class="c1"># For each row, join the names of positive phenotypes by doing</span>
+    <span class="c1"># a dot product between the mask and the series of phenotype names.</span>
+    <span class="n">combined_phenotypes</span> <span class="o">=</span> \
+        <span class="n">phenotype_masks</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">phenotypes_series</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">)</span>
+
+    <span class="c1"># Set all with 0 positive phenotypes to &quot;no_label&quot;</span>
+    <span class="n">counts_positive</span> <span class="o">=</span> <span class="n">phenotype_masks</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">combined_phenotypes</span><span class="p">[</span><span class="n">counts_positive</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;no_label&quot;</span>
+
+    <span class="c1"># Handle the case when multiple is False:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">multiple</span><span class="p">:</span>
+
+        <span class="c1"># set all with &gt;1 positive phenotypes to &quot;no_label&quot;</span>
+        <span class="n">combined_phenotypes</span><span class="p">[</span><span class="n">counts_positive</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;no_label&quot;</span>
+
+    <span class="k">return</span> <span class="n">combined_phenotypes</span></div>
+
+
+
+<div class="viewcode-block" id="assign_manual_phenotypes">
+<a class="viewcode-back" href="../../spac.html#spac.phenotyping.assign_manual_phenotypes">[docs]</a>
+<span class="k">def</span> <span class="nf">assign_manual_phenotypes</span><span class="p">(</span>
+        <span class="n">data_df</span><span class="p">,</span>
+        <span class="n">phenotypes_df</span><span class="p">,</span>
+        <span class="n">annotation</span><span class="o">=</span><span class="s2">&quot;manual_phenotype&quot;</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">drop_binary_code</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Assign manual phenotypes to the DataFrame and generate summaries.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_df : pandas.DataFrame</span>
+<span class="sd">        The DataFrame to which manual phenotypes will be assigned.</span>
+<span class="sd">    phenotypes_df : pandas.DataFrame</span>
+<span class="sd">        A DataFrame containing phenotype definitions with columns:</span>
+<span class="sd">        - &quot;phenotype_name&quot; : str</span>
+<span class="sd">            The name of the phenotype.</span>
+<span class="sd">        - &quot;phenotype_code&quot; : str</span>
+<span class="sd">            The code used to decode the phenotype.</span>
+<span class="sd">    annotation : str, optional</span>
+<span class="sd">        The name of the column to store the combined phenotype. Default is</span>
+<span class="sd">        &quot;manual_phenotype&quot;.</span>
+<span class="sd">    prefix : str, optional</span>
+<span class="sd">        Prefix to be added to the column names. Default is &#39;&#39;.</span>
+<span class="sd">    suffix : str, optional</span>
+<span class="sd">        Suffix to be added to the column names. Default is &#39;&#39;.</span>
+<span class="sd">    multiple : bool, optional</span>
+<span class="sd">        Whether to concatenate the names of multiple positive phenotypes.</span>
+<span class="sd">        Default is True.</span>
+<span class="sd">    drop_binary_code : bool, optional</span>
+<span class="sd">        Whether to drop the binary phenotype columns. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary with the following keys:</span>
+<span class="sd">        - &quot;phenotypes_counts&quot;: dict</span>
+<span class="sd">            Counts of cells matching each defined phenotype.</span>
+<span class="sd">        - &quot;assigned_phenotype_counts&quot;: dict</span>
+<span class="sd">            Counts of cells matching different numbers of phenotypes.</span>
+<span class="sd">        - &quot;multiple_phenotypes_summary&quot;: pandas.DataFrame</span>
+<span class="sd">            Summary of cells with multiple phenotypes.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function generates a combined phenotype column, prints summaries of</span>
+<span class="sd">    cells matching multiple phenotypes, and returns a dictionary with</span>
+<span class="sd">    detailed counts and summaries.</span>
+
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Suppose `data_df` is a DataFrame with binary phenotype columns and </span>
+<span class="sd">    `phenotypes_df` contains the following definitions:</span>
+
+<span class="sd">    &gt;&gt;&gt; data_df = pd.DataFrame({</span>
+<span class="sd">    ...     &#39;cd4_phenotype&#39;: [0, 1, 0, 1],</span>
+<span class="sd">    ...     &#39;cd8_phenotype&#39;: [0, 0, 1, 1]</span>
+<span class="sd">    ... })</span>
+<span class="sd">    &gt;&gt;&gt; phenotypes_df = pd.DataFrame([</span>
+<span class="sd">    ...     {&quot;phenotype_name&quot;: &quot;cd4_cells&quot;, &quot;phenotype_code&quot;: &quot;cd4+&quot;},</span>
+<span class="sd">    ...     {&quot;phenotype_name&quot;: &quot;cd8_cells&quot;, &quot;phenotype_code&quot;: &quot;cd8+&quot;},</span>
+<span class="sd">    ...     {&quot;phenotype_name&quot;: &quot;cd4_cd8&quot;, &quot;phenotype_code&quot;: &quot;cd4+cd8+&quot;}</span>
+<span class="sd">    ... ])</span>
+<span class="sd">    &gt;&gt;&gt; result = assign_manual_phenotypes(</span>
+<span class="sd">    ...     data_df,</span>
+<span class="sd">    ...     phenotypes_df,</span>
+<span class="sd">    ...     annotation=&quot;manual&quot;,</span>
+<span class="sd">    ...     prefix=&#39;&#39;,</span>
+<span class="sd">    ...     suffix=&#39;_phenotype&#39;,</span>
+<span class="sd">    ...     multiple=True</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    The `data_df` DataFrame will be edited in place to include a new column</span>
+<span class="sd">    `&quot;manual&quot;` with the combined phenotype labels:</span>
+
+<span class="sd">    &gt;&gt;&gt; print(data_df)</span>
+<span class="sd">       cd4_phenotype  cd8_phenotype manual</span>
+<span class="sd">    0              0              0 no_label</span>
+<span class="sd">    1              1              0 cd4_cells</span>
+<span class="sd">    2              0              1 cd8_cells</span>
+<span class="sd">    3              1              1 cd8_cells, cd4_cd8</span>
+
+<span class="sd">    The result dictionary contains counts and summaries as follows:</span>
+
+<span class="sd">    &gt;&gt;&gt; print(result[&quot;phenotypes_counts&quot;])</span>
+<span class="sd">    {&#39;cd4_cells&#39;: 1, &#39;cd8_cells&#39;: 2, &#39;cd4_cd8&#39;: 1}</span>
+
+<span class="sd">    &gt;&gt;&gt; print(result[&quot;assigned_phenotype_counts&quot;])</span>
+<span class="sd">    0    1</span>
+<span class="sd">    1    2</span>
+<span class="sd">    2    1</span>
+<span class="sd">    Name: num_phenotypes, dtype: int64</span>
+
+<span class="sd">    &gt;&gt;&gt; print(result[&quot;multiple_phenotypes_summary&quot;])</span>
+<span class="sd">                   manual  count</span>
+<span class="sd">    0  cd8_cells, cd4_cd8      1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">phenotypes_dic</span> <span class="o">=</span> <span class="n">generate_phenotypes_dict</span><span class="p">(</span>
+        <span class="n">data_df</span><span class="p">,</span>
+        <span class="n">phenotypes_df</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span>
+    <span class="p">)</span>
+
+    <span class="n">phenotypes_counts</span> <span class="o">=</span> <span class="n">apply_phenotypes</span><span class="p">(</span><span class="n">data_df</span><span class="p">,</span> <span class="n">phenotypes_dic</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#####################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Print the counts of cells in every phenotype</span>
+    <span class="k">for</span> <span class="n">phenotype</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">phenotypes_counts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">phenotype</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> cell(s)&quot;</span><span class="p">)</span>
+
+    <span class="n">phenotypes_columns</span> <span class="o">=</span> <span class="n">phenotypes_dic</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="n">data_df</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">=</span> <span class="n">combine_phenotypes</span><span class="p">(</span>
+        <span class="n">data_df</span><span class="p">,</span>
+        <span class="n">phenotypes_columns</span><span class="p">,</span>
+        <span class="n">multiple</span><span class="p">)</span>
+
+    <span class="n">number_phenotypes_columns</span> <span class="o">=</span> <span class="s2">&quot;num_phenotypes&quot;</span>
+    <span class="n">data_df</span><span class="p">[</span><span class="n">number_phenotypes_columns</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">data_df</span><span class="p">[</span><span class="n">phenotypes_columns</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">data_df</span><span class="p">[</span><span class="n">number_phenotypes_columns</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#####################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Summary of cells that matched multiple phenotypes:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">num_phenotypes</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">summary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cells that matched </span><span class="si">{</span><span class="n">num_phenotypes</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; phenotype(s): </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> cells&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#####################################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Summary of cells with multiple phenotypes in &quot;</span><span class="si">{</span><span class="n">annotation</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">multiple_phenotypes</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">data_df</span><span class="p">[</span><span class="n">data_df</span><span class="p">[</span><span class="n">number_phenotypes_columns</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">multiple_phenotypes_df</span> <span class="o">=</span> <span class="n">multiple_phenotypes</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">multiple_phenotypes_df</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+    <span class="n">return_dic</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">return_dic</span><span class="p">[</span><span class="s2">&quot;assigned_phenotype_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span>
+    <span class="n">return_dic</span><span class="p">[</span><span class="s2">&quot;multiple_phenotypes_summary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">multiple_phenotypes_df</span>
+    <span class="n">return_dic</span><span class="p">[</span><span class="s2">&quot;phenotypes_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phenotypes_counts</span>
+
+    <span class="k">if</span> <span class="n">drop_binary_code</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Remove the columns defined by the keys of the dictionary phenotypes_counts</span>
+        <span class="n">data_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">phenotypes_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">return_dic</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

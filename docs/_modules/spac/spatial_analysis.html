@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spac.spatial_analysis &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">spac.spatial_analysis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for spac.spatial_analysis</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">squidpy</span> <span class="k">as</span> <span class="nn">sq</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">anndata</span>
+<span class="kn">from</span> <span class="nn">spac.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">check_annotation</span><span class="p">,</span>
+    <span class="n">check_table</span><span class="p">,</span>
+    <span class="n">check_distances</span><span class="p">,</span>
+    <span class="n">check_label</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">KDTree</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">distance_matrix</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelEncoder</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">scimap</span> <span class="k">as</span> <span class="nn">sm</span>
+
+
+<div class="viewcode-block" id="spatial_interaction">
+<a class="viewcode-back" href="../../spac.html#spac.spatial_analysis.spatial_interaction">[docs]</a>
+<span class="k">def</span> <span class="nf">spatial_interaction</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">annotation</span><span class="p">,</span>
+        <span class="n">analysis_method</span><span class="p">,</span>
+        <span class="n">stratify_by</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_matrix</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">coord_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_rings</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_neighs</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+        <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;seismic&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform spatial analysis on the selected annotation in the dataset.</span>
+<span class="sd">    Current analysis methods are provided in squidpy:</span>
+<span class="sd">        Neighborhood Enrichment,</span>
+<span class="sd">        Cluster Interaction Matrix</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        The AnnData object.</span>
+
+<span class="sd">    annotation : str</span>
+<span class="sd">        The column name of the annotation (e.g., phenotypes) to analyze in the</span>
+<span class="sd">        provided dataset.</span>
+
+<span class="sd">    analysis_method : str</span>
+<span class="sd">        The analysis method to use, currently available:</span>
+<span class="sd">        &quot;Neighborhood Enrichment&quot; and &quot;Cluster Interaction Matrix&quot;.</span>
+
+<span class="sd">    stratify_by : str or list of strs</span>
+<span class="sd">        The annotation[s] to stratify the dataset when generating</span>
+<span class="sd">        interaction plots. If single annotation is passed, the dataset</span>
+<span class="sd">        will be stratified by the unique labels in the annotation column.</span>
+<span class="sd">        If n (n&gt;=2) annotations are passed, the function will be stratified</span>
+<span class="sd">        based on existing combination of labels in the passed annotations.</span>
+
+<span class="sd">    ax: matplotlib.axes.Axes, default None</span>
+<span class="sd">        The matplotlib Axes to display the image. This option is only</span>
+<span class="sd">        available when stratify is None.</span>
+
+<span class="sd">    return_matrix: boolean, default False</span>
+<span class="sd">        If true, the fucntion will return a list of two dictionaries,</span>
+<span class="sd">        the first contains axes and the second containing computed matrix.</span>
+<span class="sd">        Note that for Neighborhood Encrichment, the matrix will be a tuple</span>
+<span class="sd">        with the z-score and the enrichment count.</span>
+<span class="sd">        For Cluster Interaction Matrix, it will returns the</span>
+<span class="sd">        interaction matrix.</span>
+<span class="sd">        If False, the function will return only the axes dictionary.</span>
+
+<span class="sd">    seed: int, default None</span>
+<span class="sd">        Random seed for reproducibility, used in Neighborhood Enrichment</span>
+<span class="sd">        Analysis.</span>
+
+<span class="sd">    coord_type : str, optional</span>
+<span class="sd">        Type of coordinate system used in sq.gr.spatial_neighbors.</span>
+<span class="sd">        Should be either &#39;grid&#39; (Visium Data) or &#39;generic&#39; (Others).</span>
+<span class="sd">        Default is None, decided by the squidy pacakge. If spatial_key</span>
+<span class="sd">        is in anndata.uns the coord_type would be &#39;grid&#39;, otherwise</span>
+<span class="sd">        general.</span>
+
+<span class="sd">    n_rings : int, default 1</span>
+<span class="sd">        Number of rings of neighbors for grid data.</span>
+<span class="sd">        Only used when coord_type = &#39;grid&#39; (Visium)</span>
+
+<span class="sd">    n_neights : int, optional</span>
+<span class="sd">        Default is 6.</span>
+<span class="sd">        Depending on the ``coord_type``:</span>
+<span class="sd">        - &#39;grid&#39; (Visium) - number of neighboring tiles.</span>
+<span class="sd">        - &#39;generic&#39; - number of neighborhoods for non-grid data.</span>
+
+<span class="sd">    radius : float, optional</span>
+<span class="sd">        Default is None.</span>
+<span class="sd">        Only available when coord_type = &#39;generic&#39;. Depending on the type:</span>
+<span class="sd">        - :class:`float` - compute the graph based on neighborhood radius.</span>
+<span class="sd">        - :class:`tuple` - prune the final graph to only contain</span>
+<span class="sd">            edges in interval `[min(radius), max(radius)]`.</span>
+
+<span class="sd">    cmap : str, default &#39;seismic&#39;</span>
+<span class="sd">        The colormap to use for the plot. The &#39;seismic&#39; color map</span>
+<span class="sd">        consist of three color regions: red for positive, blue for negative,</span>
+<span class="sd">        and the white at the center. This color map effectively represents</span>
+<span class="sd">        the nature of the spatial interaction analysis results,</span>
+<span class="sd">        where positive values indicate clustering and</span>
+<span class="sd">        negative values indicate seperation. For more color maps, please visit</span>
+<span class="sd">        https://matplotlib.org/stable/tutorials/colors/colormaps.html</span>
+
+<span class="sd">    **kwargs</span>
+<span class="sd">        Keyword arguments for matplotlib.pyplot.text()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary containing the results of the spatial interaction</span>
+<span class="sd">        analysis. The keys of the dictionary depend on the parameters</span>
+<span class="sd">        passed to the function:</span>
+
+<span class="sd">        Ax : dict or matplotlib.axes.Axes</span>
+<span class="sd">            If `stratify_by` is not used, returns a single</span>
+<span class="sd">            matplotlib.axes.Axes object. If `stratify_by` is used,</span>
+<span class="sd">            returns a dictionary of Axes objects, with keys</span>
+<span class="sd">            representing the stratification groups.</span>
+
+<span class="sd">        Matrix : dict, optional</span>
+<span class="sd">            Contains processed DataFrames of computed matrices with row and</span>
+<span class="sd">            column labels applied. If `stratify_by` is used, the keys represent</span>
+<span class="sd">            the stratification groups. For example:</span>
+<span class="sd">            - `results[&#39;Matrix&#39;][&#39;GroupA&#39;]` for a specific stratification group.</span>
+<span class="sd">            - If `stratify_by` is not used, the table is accessible via</span>
+<span class="sd">            `results[&#39;Matrix&#39;][&#39;annotation&#39;]`.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># List all available methods</span>
+    <span class="n">available_methods</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;Neighborhood Enrichment&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Cluster Interaction Matrix&quot;</span>
+    <span class="p">]</span>
+    <span class="n">available_methods_str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">available_methods</span><span class="p">)</span>
+
+    <span class="c1"># pacakge each methods into a function to allow</span>
+    <span class="c1"># centralized control and improve flexibility</span>
+    <span class="k">def</span> <span class="nf">_Neighborhood_Enrichment_Analysis</span><span class="p">(</span>
+                <span class="n">adata</span><span class="p">,</span>
+                <span class="n">categorical_annotation</span><span class="p">,</span>
+                <span class="n">ax</span><span class="p">,</span>
+                <span class="n">return_matrix</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform Neighborhood Enrichment analysis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        adata : anndata.AnnData</span>
+<span class="sd">            The AnnData object.</span>
+
+<span class="sd">        categorical_annotation : str</span>
+<span class="sd">            Name of the annotation column to analyze.</span>
+
+<span class="sd">        ax : matplotlib.axes.Axes</span>
+<span class="sd">            Axes to plot the enrichment results.</span>
+
+<span class="sd">        return_matrix : bool</span>
+<span class="sd">            If True, returns the enrichment matrix.</span>
+
+<span class="sd">        title : str, optional</span>
+<span class="sd">            Title of the plot.</span>
+
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            Random seed for reproducibility.</span>
+
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments for the plot.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ax or [ax, matrix]</span>
+<span class="sd">            The plot axes or axes and enrichment matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate Neighborhood_Enrichment</span>
+        <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">nhood_enrichment</span><span class="p">(</span>
+                        <span class="n">adata</span><span class="p">,</span>
+                        <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                        <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span>
+                <span class="p">)</span>
+
+            <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">nhood_enrichment</span><span class="p">(</span>
+                        <span class="n">adata</span><span class="p">,</span>
+                        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                        <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">nhood_enrichment</span><span class="p">(</span>
+                        <span class="n">adata</span><span class="p">,</span>
+                        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                        <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Plot Neighborhood_Enrichment</span>
+        <span class="n">sq</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">nhood_enrichment</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">ax</span><span class="p">,</span> <span class="n">matrix</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ax</span>
+
+    <span class="k">def</span> <span class="nf">_Cluster_Interaction_Matrix_Analysis</span><span class="p">(</span>
+                <span class="n">adata</span><span class="p">,</span>
+                <span class="n">categorical_annotation</span><span class="p">,</span>
+                <span class="n">ax</span><span class="p">,</span>
+                <span class="n">return_matrix</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform Cluster Interaction Matrix analysis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        adata : anndata.AnnData</span>
+<span class="sd">            The AnnData object.</span>
+
+<span class="sd">        categorical_annotation : str</span>
+<span class="sd">            Name of the annotation column to analyze.</span>
+
+<span class="sd">        ax : matplotlib.axes.Axes</span>
+<span class="sd">            Axes to plot the interaction matrix.</span>
+
+<span class="sd">        return_matrix : bool</span>
+<span class="sd">            If True, returns the interaction matrix.</span>
+
+<span class="sd">        title : str, optional</span>
+<span class="sd">            Title of the plot.</span>
+
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments for the plot.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ax or [ax, matrix]</span>
+<span class="sd">            The plot axes or axes and interaction matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate Cluster_Interaction_Matrix</span>
+
+        <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">interaction_matrix</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span><span class="p">,</span>
+                    <span class="n">copy</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">interaction_matrix</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">interaction_matrix</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span>
+            <span class="p">)</span>
+
+        <span class="n">sq</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">interaction_matrix</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                    <span class="n">cluster_key</span><span class="o">=</span><span class="n">categorical_annotation</span><span class="p">,</span>
+                    <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">ax</span><span class="p">,</span> <span class="n">matrix</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ax</span>
+
+    <span class="c1"># Perfrom the actual analysis, first call sq.gr.spatial_neighbors</span>
+    <span class="c1"># to calculate neighboring graph, then do different analysis.</span>
+    <span class="k">def</span> <span class="nf">_perform_analysis</span><span class="p">(</span>
+            <span class="n">adata</span><span class="p">,</span>
+            <span class="n">analysis_method</span><span class="p">,</span>
+            <span class="n">categorical_annotation</span><span class="p">,</span>
+            <span class="n">ax</span><span class="p">,</span>
+            <span class="n">coord_type</span><span class="p">,</span>
+            <span class="n">n_rings</span><span class="p">,</span>
+            <span class="n">n_neighs</span><span class="p">,</span>
+            <span class="n">radius</span><span class="p">,</span>
+            <span class="n">return_matrix</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform the specified spatial analysis method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Same as parent function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ax or [ax, matrix]</span>
+<span class="sd">            The plot axes or axes and matrix results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sq</span><span class="o">.</span><span class="n">gr</span><span class="o">.</span><span class="n">spatial_neighbors</span><span class="p">(</span>
+            <span class="n">adata</span><span class="p">,</span>
+            <span class="n">coord_type</span><span class="o">=</span><span class="n">coord_type</span><span class="p">,</span>
+            <span class="n">n_rings</span><span class="o">=</span><span class="n">n_rings</span><span class="p">,</span>
+            <span class="n">n_neighs</span><span class="o">=</span><span class="n">n_neighs</span><span class="p">,</span>
+            <span class="n">radius</span><span class="o">=</span><span class="n">radius</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">analysis_method</span> <span class="o">==</span> <span class="s2">&quot;Neighborhood Enrichment&quot;</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">_Neighborhood_Enrichment_Analysis</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">categorical_annotation</span><span class="p">,</span>
+                    <span class="n">ax</span><span class="p">,</span>
+                    <span class="n">return_matrix</span><span class="p">,</span>
+                    <span class="n">title</span><span class="p">,</span>
+                    <span class="n">seed</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">analysis_method</span> <span class="o">==</span> <span class="s2">&quot;Cluster Interaction Matrix&quot;</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">_Cluster_Interaction_Matrix_Analysis</span><span class="p">(</span>
+                    <span class="n">adata</span><span class="p">,</span>
+                    <span class="n">categorical_annotation</span><span class="p">,</span>
+                    <span class="n">ax</span><span class="p">,</span>
+                    <span class="n">return_matrix</span><span class="p">,</span>
+                    <span class="n">title</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ax</span>
+
+    <span class="k">def</span> <span class="nf">_get_labels</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span>
+        <span class="n">unique_annotations</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract row and column labels from plot axes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fig : matplotlib.figure.Figure</span>
+<span class="sd">            The figure containing the plots.</span>
+
+<span class="sd">        unique_annotations : list</span>
+<span class="sd">            List of unique annotation labels.</span>
+
+<span class="sd">        verbose : bool, default False</span>
+<span class="sd">            If True, print debugging information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of row labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Iterate over all axes to check if any contain the row labels</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inspecting axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="c1"># Try to extract labels from the y-axis of each axis</span>
+            <span class="n">yticklabels</span> <span class="o">=</span> <span class="p">[</span><span class="n">tick</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span> <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">()]</span>
+            <span class="n">xticklabels</span> <span class="o">=</span> <span class="p">[</span><span class="n">tick</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span> <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">()]</span>
+
+            <span class="k">if</span> <span class="n">yticklabels</span> <span class="ow">and</span> <span class="n">xticklabels</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Both x- and y-axis labels found on axis. &quot;</span>
+                    <span class="s2">&quot;Unable to determine row labels.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">yticklabels</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">xticklabels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">yticklabels</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">unique_annotations</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Row labels found on axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">yticklabels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">row_labels</span> <span class="o">=</span> <span class="n">yticklabels</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Try extracting other possible labels (x-axis, title, etc.)</span>
+            <span class="k">elif</span> <span class="n">xticklabels</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">yticklabels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">xticklabels</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">unique_annotations</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Column labels found on axis </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">xticklabels</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">row_labels</span> <span class="o">=</span> <span class="n">xticklabels</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s2">&quot;No labels found on axis. Unable to determine row labels.&quot;</span>
+                        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">row_labels</span>
+
+    <span class="c1"># Use to process the output from different</span>
+    <span class="c1"># spatial analysis method in squidpy</span>
+    <span class="k">def</span> <span class="nf">_process_matrixs</span><span class="p">(</span>
+        <span class="n">matrixs</span><span class="p">,</span>
+        <span class="n">row_labels</span><span class="p">,</span>
+        <span class="n">plot_label</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the output matrices for saving and visualization.</span>
+
+<span class="sd">        This function organizes matrices produced during the spatial analysis,</span>
+<span class="sd">        adding appropriate labels and creating a dictionary for easy access.</span>
+<span class="sd">        The processed matrices are returned in a labeled format suitable</span>
+<span class="sd">        for saving or further analysis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        matrixs : dict</span>
+<span class="sd">            Dictionary of raw matrices generated from spatial analyses.</span>
+
+<span class="sd">        row_labels : list</span>
+<span class="sd">            List of row and column labels for the matrices, used to annotate</span>
+<span class="sd">            the resulting DataFrames.</span>
+
+<span class="sd">        plot_label : str, optional</span>
+<span class="sd">            Additional label to append to the matrix file names, useful for</span>
+<span class="sd">            distinguishing between different stratification groups or analysis</span>
+<span class="sd">            scenarios.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A dictionary of labeled matrices, where the keys are the file names</span>
+<span class="sd">            (including the annotation and analysis method) and the values are</span>
+<span class="sd">            pandas DataFrames representing the matrices.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        For &quot;Cluster Interaction Matrix&quot;, a single matrix is processed.</span>
+<span class="sd">        For &quot;Neighborhood Enrichment&quot;, multiple matrices (e.g., z-score and</span>
+<span class="sd">        enrichment counts) are processed separately.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">return_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">analysis_method</span> <span class="o">==</span> <span class="s2">&quot;Cluster Interaction Matrix&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrixs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+                <span class="n">matrix</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">matrixs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">matrix</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">row_labels</span>
+                <span class="n">matrix</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">row_labels</span>
+
+            <span class="k">if</span> <span class="n">plot_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">annotation</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_file_cat_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> \
+                            <span class="s2">&quot;_interaction_matrix.csv&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">annotation</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_file_cat_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> \
+                            <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">plot_label</span><span class="si">}</span><span class="s2">_interaction_matrix.csv&quot;</span>
+
+            <span class="n">return_dict</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span>
+
+        <span class="k">elif</span> <span class="n">analysis_method</span> <span class="o">==</span> <span class="s2">&quot;Neighborhood Enrichment&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">matrixs</span><span class="p">):</span>
+                <span class="c1"># Convert each 2D array to a DataFrame</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+                    <span class="n">matrix</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">matrix</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">row_labels</span>
+                    <span class="n">matrix</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">row_labels</span>
+
+                <span class="k">if</span> <span class="n">plot_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">annotation</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_file_cat_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> \
+                                <span class="s2">&quot;_interaction_matrix.csv&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">annotation</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_file_cat_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> \
+                                <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">plot_label</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> \
+                                <span class="s2">&quot;_interaction_matrix.csv&quot;</span>
+
+                <span class="n">return_dict</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span>
+        <span class="k">return</span> <span class="n">return_dict</span>
+
+    <span class="c1"># -----------------------------------------------</span>
+    <span class="c1"># Error Check Section</span>
+    <span class="c1"># -----------------------------------------------</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">anndata</span><span class="o">.</span><span class="n">AnnData</span><span class="p">):</span>
+        <span class="n">error_text</span> <span class="o">=</span> <span class="s2">&quot;Input data is not an AnnData object. &quot;</span> <span class="o">+</span> \
+            <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">adata</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_text</span><span class="p">)</span>
+
+    <span class="n">check_annotation</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">annotations</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span>
+        <span class="n">parameter_name</span><span class="o">=</span><span class="s2">&quot;annotation&quot;</span><span class="p">,</span>
+        <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Check if stratify_by is list or list of str</span>
+    <span class="n">check_annotation</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">annotations</span><span class="o">=</span><span class="n">stratify_by</span><span class="p">,</span>
+        <span class="n">parameter_name</span><span class="o">=</span><span class="s2">&quot;stratify_by&quot;</span><span class="p">,</span>
+        <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">analysis_method</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">error_text</span> <span class="o">=</span> <span class="s2">&quot;The analysis methods must be a string.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">analysis_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_methods</span><span class="p">:</span>
+            <span class="n">error_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="n">analysis_method</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot; is not supported currently. &quot;</span> <span class="o">+</span> \
+                <span class="sa">f</span><span class="s2">&quot;Available methods are: </span><span class="si">{</span><span class="n">available_methods_str</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_text</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">):</span>
+            <span class="n">error_text</span> <span class="o">=</span> <span class="s2">&quot;Invalid &#39;ax&#39; argument. &quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot;Expected an instance of matplotlib.axes.Axes. &quot;</span> <span class="o">+</span> \
+                <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">ax</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+    <span class="c1"># Operational Section</span>
+    <span class="c1"># -----------------------------------------------</span>
+
+    <span class="c1"># Create a categorical column data for plotting\</span>
+    <span class="c1"># This is to avoid modifying the original annotation to comply with</span>
+    <span class="c1"># the squidpy function requirements</span>
+
+    <span class="n">categorical_annotation</span> <span class="o">=</span> <span class="n">annotation</span> <span class="o">+</span> <span class="s2">&quot;_plot&quot;</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">categorical_annotation</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">stratify_by</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stratify_by</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_spac_utils_concat_obs&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">stratify_by</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_spac_utils_concat_obs&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">stratify_by</span><span class="p">]</span>
+
+    <span class="c1"># Partial function for the _perform_analysis function</span>
+    <span class="c1"># to allow for uniform parameter passing for both stratified</span>
+    <span class="c1"># and non-stratified analysis</span>
+    <span class="n">perform_analysis_prefilled</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">_perform_analysis</span><span class="p">,</span>
+        <span class="n">analysis_method</span><span class="o">=</span><span class="n">analysis_method</span><span class="p">,</span>
+        <span class="n">categorical_annotation</span><span class="o">=</span><span class="n">categorical_annotation</span><span class="p">,</span>
+        <span class="n">coord_type</span><span class="o">=</span><span class="n">coord_type</span><span class="p">,</span>
+        <span class="n">n_rings</span><span class="o">=</span><span class="n">n_rings</span><span class="p">,</span>
+        <span class="n">n_neighs</span><span class="o">=</span><span class="n">n_neighs</span><span class="p">,</span>
+        <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span>
+        <span class="n">return_matrix</span><span class="o">=</span><span class="n">return_matrix</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Compute a connectivity matrix from spatial coordinates</span>
+    <span class="k">if</span> <span class="n">stratify_by</span><span class="p">:</span>
+        <span class="n">ax_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">matrix_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">unique_values</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_spac_utils_concat_obs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">subset_key</span> <span class="ow">in</span> <span class="n">unique_values</span><span class="p">:</span>
+            <span class="c1"># Subset the original AnnData object based on the unique value</span>
+            <span class="n">subset_adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span>
+                <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_spac_utils_concat_obs&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">subset_key</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+            <span class="n">image_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Group: </span><span class="si">{</span><span class="n">subset_key</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">perform_analysis_prefilled</span><span class="p">(</span>
+                            <span class="n">adata</span><span class="o">=</span><span class="n">subset_adata</span><span class="p">,</span>
+                            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                            <span class="n">title</span><span class="o">=</span><span class="n">image_title</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">kwargs</span>
+                        <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+                <span class="n">ax_dictionary</span><span class="p">[</span><span class="n">subset_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">matrix_dictionary</span><span class="p">[</span><span class="n">subset_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ax_dictionary</span><span class="p">[</span><span class="n">subset_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax</span>
+
+            <span class="k">del</span> <span class="n">subset_adata</span>
+
+        <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Ax&quot;</span><span class="p">:</span> <span class="n">ax_dictionary</span><span class="p">,</span>
+                <span class="s2">&quot;Matrix&quot;</span><span class="p">:</span> <span class="n">matrix_dictionary</span>
+            <span class="p">}</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Ax&quot;</span><span class="p">:</span> <span class="n">ax_dictionary</span><span class="p">}</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">perform_analysis_prefilled</span><span class="p">(</span>
+                <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Ax&quot;</span><span class="p">:</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s2">&quot;Matrix&quot;</span><span class="p">:</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Ax&quot;</span><span class="p">:</span> <span class="n">ax</span><span class="p">}</span>
+
+    <span class="c1"># Adding post processing methods for updating images and retrieve</span>
+
+    <span class="c1"># Acquire the annotation labels and acquire</span>
+    <span class="c1"># the column names from axes and matrixs</span>
+
+    <span class="k">if</span> <span class="n">return_matrix</span><span class="p">:</span>
+        <span class="n">output_file_cat_grosarry</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Neighborhood Enrichment&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;z_score&quot;</span><span class="p">,</span> <span class="s2">&quot;enrichment_counts&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Cluster Interaction Matrix&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;interaction_counts&quot;</span><span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="n">output_file_cat_list</span> <span class="o">=</span> <span class="n">output_file_cat_grosarry</span><span class="p">[</span><span class="n">analysis_method</span><span class="p">]</span>
+
+        <span class="n">unique_annotations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+
+        <span class="n">_matrixs</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;Matrix&#39;</span><span class="p">]</span>
+        <span class="n">_axs</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;Ax&#39;</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">_processes_function_return</span><span class="p">(</span>
+            <span class="n">matrix</span><span class="p">,</span>
+            <span class="n">ax</span><span class="p">,</span>
+            <span class="n">plot_label</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_figure</span><span class="p">()</span>
+            <span class="n">row_labels</span> <span class="o">=</span> <span class="n">_get_labels</span><span class="p">(</span>
+                    <span class="n">fig</span><span class="p">,</span>
+                    <span class="n">unique_annotations</span>
+                <span class="p">)</span>
+            <span class="n">result_dict</span> <span class="o">=</span> <span class="n">_process_matrixs</span><span class="p">(</span>
+                <span class="n">matrix</span><span class="p">,</span>
+                <span class="n">row_labels</span><span class="p">,</span>
+                <span class="n">plot_label</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">result_dict</span>
+
+        <span class="n">table_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">stratify_by</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_axs</span><span class="p">:</span>
+                <span class="n">_ax</span> <span class="o">=</span> <span class="n">_axs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">_matrix</span> <span class="o">=</span> <span class="n">_matrixs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">result_dict</span> <span class="o">=</span> <span class="n">_processes_function_return</span><span class="p">(</span>
+                    <span class="n">_matrix</span><span class="p">,</span>
+                    <span class="n">_ax</span><span class="p">,</span>
+                    <span class="n">key</span>
+                <span class="p">)</span>
+                <span class="n">table_results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result_dict</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">table_results</span><span class="p">[</span><span class="s1">&#39;annotation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_processes_function_return</span><span class="p">(</span>
+                <span class="n">_matrixs</span><span class="p">,</span>
+                <span class="n">_axs</span>
+            <span class="p">)</span>
+
+        <span class="n">results</span><span class="p">[</span><span class="s1">&#39;Matrix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table_results</span>
+
+    <span class="c1"># Clean up the temporary columns</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">categorical_annotation</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stratify_by</span><span class="p">:</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;_spac_utils_concat_obs&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="ripley_l">
+<a class="viewcode-back" href="../../spac.html#spac.spatial_analysis.ripley_l">[docs]</a>
+<span class="k">def</span> <span class="nf">ripley_l</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">annotation</span><span class="p">,</span>
+    <span class="n">phenotypes</span><span class="p">,</span>
+    <span class="n">distances</span><span class="p">,</span>
+    <span class="n">regions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">spatial_key</span><span class="o">=</span><span class="s2">&quot;spatial&quot;</span><span class="p">,</span>
+    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Ripley&#39;s L statistic for spatial data in `adata`.</span>
+
+<span class="sd">    Ripley&#39;s L statistic is a spatial point pattern analysis metric that</span>
+<span class="sd">    quantifies clustering or regularity in point patterns across various</span>
+<span class="sd">    distances. This function calculates the statistic for each region in</span>
+<span class="sd">    `adata` (if provided) or for all cells if regions are not specified.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        The annotated data matrix containing the spatial coordinates and</span>
+<span class="sd">        cell phenotypes.</span>
+<span class="sd">    annotation : str</span>
+<span class="sd">        The key in `adata.obs` representing the annotation for cell phenotypes.</span>
+<span class="sd">    phenotypes : list of str</span>
+<span class="sd">        A list containing two phenotypes for which the Ripley L statistic</span>
+<span class="sd">        will be calculated. If the two phenotypes are the same, the</span>
+<span class="sd">        calculation is done for the same type; if different, it considers</span>
+<span class="sd">        interactions between the two.</span>
+<span class="sd">    distances : array-like</span>
+<span class="sd">        An array of distances at which to calculate Ripley&#39;s L statistic.</span>
+<span class="sd">        The values must be positive and incremental.</span>
+<span class="sd">    regions : str or None, optional</span>
+<span class="sd">        The key in `adata.obs` representing regions for stratifying the</span>
+<span class="sd">        data. If `None`, all cells will be treated as one region.</span>
+<span class="sd">    spatial_key : str, optional</span>
+<span class="sd">        The key in `adata.obsm` representing the spatial coordinates.</span>
+<span class="sd">        Default is `&quot;spatial&quot;`.</span>
+<span class="sd">    n_simulations : int, optional</span>
+<span class="sd">        Number of simulations to perform for significance testing. Default is 100.</span>
+<span class="sd">    area : float or None, optional</span>
+<span class="sd">        The area of the spatial region of interest. If `None`, the area</span>
+<span class="sd">        will be inferred from the data. Default is `None`.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Random seed for simulation reproducibility. Default is 42.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A DataFrame containing the Ripley&#39;s L results for each region or</span>
+<span class="sd">        the entire dataset if `regions` is `None`. The DataFrame includes</span>
+<span class="sd">        the following columns:</span>
+<span class="sd">        - `region`: The region label or &#39;all&#39; if no regions are specified.</span>
+<span class="sd">        - `center_phenotype`: The first phenotype in `phenotypes`.</span>
+<span class="sd">        - `neighbor_phenotype`: The second phenotype in `phenotypes`.</span>
+<span class="sd">        - `ripley_l`: The Ripley&#39;s L statistic calculated for the region.</span>
+<span class="sd">        - `config`: A dictionary with configuration settings used for the calculation.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Ripley&#39;s L is an adjusted version of Ripley&#39;s K that corrects for the</span>
+<span class="sd">    inherent increase in point-to-point distances as the distance grows.</span>
+<span class="sd">    This statistic is used to evaluate spatial clustering or dispersion</span>
+<span class="sd">    of points (cells) in biological datasets.</span>
+
+<span class="sd">    The function uses pre-defined distances and performs simulations to</span>
+<span class="sd">    assess the significance of observed patterns. The results are stored</span>
+<span class="sd">    in the `.uns` attribute of `adata` under the key `&#39;ripley_l&#39;`, or in</span>
+<span class="sd">    a new DataFrame if no prior results exist.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Calculate Ripley&#39;s L for two phenotypes in a single region dataset:</span>
+
+<span class="sd">    &gt;&gt;&gt; result = ripley_l(adata, annotation=&#39;cell_type&#39;, phenotypes=[&#39;A&#39;, &#39;B&#39;], distances=np.linspace(0, 500, 100))</span>
+
+<span class="sd">    Calculate Ripley&#39;s L for multiple regions in `adata`:</span>
+
+<span class="sd">    &gt;&gt;&gt; result = ripley_l(adata, annotation=&#39;cell_type&#39;, phenotypes=[&#39;A&#39;, &#39;B&#39;], distances=np.linspace(0, 500, 100), regions=&#39;region_key&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check that distances is array-like with incremental positive values</span>
+    <span class="n">check_distances</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+
+    <span class="c1"># Check that annotation and phenotypes exist in adata.obs</span>
+    <span class="n">check_annotation</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="p">[</span><span class="n">annotation</span><span class="p">],</span> <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">check_label</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">phenotypes</span><span class="p">)</span>
+
+    <span class="c1"># Convert annotations to categorical</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">regions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_annotation</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="p">[</span><span class="n">regions</span><span class="p">],</span> <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Import ripley function from the spac library</span>
+    <span class="kn">from</span> <span class="nn">spac._ripley</span> <span class="kn">import</span> <span class="n">ripley</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+    <span class="c1"># Partial function for Ripley calculation</span>
+    <span class="n">ripley_func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+        <span class="n">ripley</span><span class="p">,</span>
+        <span class="n">cluster_key</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">,</span>
+        <span class="n">spatial_key</span><span class="o">=</span><span class="n">spatial_key</span><span class="p">,</span>
+        <span class="n">phenotypes</span><span class="o">=</span><span class="n">phenotypes</span><span class="p">,</span>
+        <span class="n">support</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span>
+        <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="n">area</span><span class="o">=</span><span class="n">area</span><span class="p">,</span>
+        <span class="n">copy</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Check if adata already has ripley_l results,</span>
+    <span class="c1"># else initialize a result DataFrame</span>
+    <span class="k">if</span> <span class="s1">&#39;ripley_l&#39;</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s1">&#39;ripley_l&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Function to process Ripley L calculation for a region</span>
+    <span class="k">def</span> <span class="nf">process_region</span><span class="p">(</span><span class="n">adata_region</span><span class="p">,</span> <span class="n">region_label</span><span class="p">):</span>
+        <span class="c1"># Calculate number of cells in the region for the phenotypes</span>
+        <span class="c1"># n_cells = get_ncells(adata_region, annotation, phenotypes)</span>
+
+        <span class="n">region_cells</span> <span class="o">=</span> <span class="n">adata_region</span><span class="o">.</span><span class="n">n_obs</span>
+        <span class="c1"># Log the region and cell info</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Processing region:&quot;</span><span class="si">{</span><span class="n">region_label</span><span class="si">}</span><span class="s1">&quot;.</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;Cells in region:&quot;</span><span class="si">{</span><span class="n">region_cells</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+        <span class="p">)</span>
+
+        <span class="n">cell_counts</span> <span class="o">=</span> <span class="n">adata_region</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">region_cells</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;WARNING, not enough cells in region &quot;</span><span class="si">{</span><span class="n">region_label</span><span class="si">}</span><span class="s1">&quot;. &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;Number of cells &quot;</span><span class="si">{</span><span class="n">region_cells</span><span class="si">}</span><span class="s1">&quot;. &#39;</span>
+                <span class="s1">&#39;Skipping Ripley L.&#39;</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">ripley_result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">phenotypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">cell_counts</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;WARNING, phenotype &quot;</span><span class="si">{</span><span class="n">phenotypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;not found in region &quot;</span><span class="si">{</span><span class="n">region_label</span><span class="si">}</span><span class="s1">&quot;, skipping Ripley L.&#39;</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">ripley_result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">phenotypes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">cell_counts</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;WARNING, phenotype &quot;</span><span class="si">{</span><span class="n">phenotypes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;not found in region &quot;</span><span class="si">{</span><span class="n">region_label</span><span class="si">}</span><span class="s1">&quot;, skipping Ripley L.&#39;</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">ripley_result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Calculate Ripley&#39;s L statistic using the partial function</span>
+            <span class="n">ripley_result</span> <span class="o">=</span> <span class="n">ripley_func</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">adata_region</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Ripley&#39;s L successfully calculated.&quot;</span>
+
+        <span class="c1"># Create a result entry for the region</span>
+        <span class="n">new_result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;region&#39;</span><span class="p">:</span> <span class="n">region_label</span><span class="p">,</span>
+            <span class="s1">&#39;center_phenotype&#39;</span><span class="p">:</span> <span class="n">phenotypes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;neighbor_phenotype&#39;</span><span class="p">:</span> <span class="n">phenotypes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;ripley_l&#39;</span><span class="p">:</span> <span class="n">ripley_result</span><span class="p">,</span>
+            <span class="s1">&#39;region_cells&#39;</span><span class="p">:</span> <span class="n">region_cells</span><span class="p">,</span>
+            <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span>
+            <span class="s1">&#39;n_simulations&#39;</span><span class="p">:</span> <span class="n">n_simulations</span><span class="p">,</span>
+            <span class="s1">&#39;seed&#39;</span><span class="p">:</span> <span class="n">seed</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">new_result</span>
+
+    <span class="k">def</span> <span class="nf">append_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">new_result</span><span class="p">):</span>
+        <span class="c1"># Convert the new result to a DataFrame</span>
+        <span class="n">new_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">new_result</span><span class="p">])</span>
+
+        <span class="c1"># Check if the dataframe exists and concatenate</span>
+        <span class="k">if</span> <span class="n">results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">results</span><span class="p">,</span> <span class="n">new_df</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">new_df</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># If regions are provided, process each region,</span>
+    <span class="c1"># else process all cells as a single region</span>
+    <span class="k">if</span> <span class="n">regions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">regions</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="n">adata_region</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">regions</span><span class="p">]</span> <span class="o">==</span> <span class="n">region</span><span class="p">]</span>
+            <span class="n">new_result</span> <span class="o">=</span> <span class="n">process_region</span><span class="p">(</span><span class="n">adata_region</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">append_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">new_result</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_result</span> <span class="o">=</span> <span class="n">process_region</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">append_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">new_result</span><span class="p">)</span>
+
+    <span class="c1"># Save the results in the AnnData object</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s1">&#39;ripley_l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="neighborhood_profile">
+<a class="viewcode-back" href="../../spac.html#spac.spatial_analysis.neighborhood_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">neighborhood_profile</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">phenotypes</span><span class="p">,</span>
+    <span class="n">distances</span><span class="p">,</span>
+    <span class="n">regions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">spatial_key</span><span class="o">=</span><span class="s2">&quot;spatial&quot;</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">associated_table_name</span><span class="o">=</span><span class="s2">&quot;neighborhood_profile&quot;</span>
+<span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the neighborhood profile for every cell in all slides in an analysis</span>
+<span class="sd">    and update the input AnnData object in place.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        The AnnData object containing the spatial coordinates and phenotypes.</span>
+
+<span class="sd">    phenotypes : str</span>
+<span class="sd">        The name of the column in adata.obs that contains the phenotypes.</span>
+
+<span class="sd">    distances : list</span>
+<span class="sd">        The list of increasing distances for the neighborhood profile.</span>
+
+<span class="sd">    spatial_key : str, optional</span>
+<span class="sd">        The key in adata.obs that contains the spatial coordinates. Default is</span>
+<span class="sd">        &#39;spatial&#39;.</span>
+
+<span class="sd">    normalize : str or None, optional</span>
+<span class="sd">        If &#39;total_cells&#39;, normalize the neighborhood profile based on the</span>
+<span class="sd">        total number of cells in each bin.</span>
+<span class="sd">        If &#39;bin_area&#39;, normalize the neighborhood profile based on the area</span>
+<span class="sd">        of every bin.  Default is None.</span>
+
+<span class="sd">    associated_table_name : str, optional</span>
+<span class="sd">        The name of the column in adata.obsm that will contain the</span>
+<span class="sd">        neighborhood profile. Default is &#39;neighborhood_profile&#39;.</span>
+
+<span class="sd">    regions : str or None, optional</span>
+<span class="sd">        The name of the column in adata.obs that contains the regions.</span>
+<span class="sd">        If None, all cells in adata will be used. Default is None.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        The function modifies the input AnnData object in place, adding a new</span>
+<span class="sd">        column containing the neighborhood profile to adata.obsm.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The input AnnData object &#39;adata&#39; is modified in place. The function adds a</span>
+<span class="sd">    new column containing the neighborhood profile to adata.obsm, named by the</span>
+<span class="sd">    parameter &#39;associated_table_name&#39;. The associated_table_name is a 3D array of</span>
+<span class="sd">    shape (n_cells, n_phenotypes, n_bins) where n_cells is the number of cells</span>
+<span class="sd">    in the all slides, n_phenotypes is the number of unique phenotypes, and</span>
+<span class="sd">    n_bins is the number of bins in the distances list.</span>
+
+<span class="sd">    A dictionary is added to adata.uns[associated_table_name] with the two keys</span>
+<span class="sd">    &quot;bins&quot; and &quot;labels&quot;. &quot;labels&quot; will store all the values in the phenotype</span>
+<span class="sd">    annotation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check that distances is array like with incremental positive values</span>
+    <span class="n">check_distances</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+
+    <span class="c1"># Check that phenotypes is adata.obs</span>
+    <span class="n">check_annotation</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">annotations</span><span class="o">=</span><span class="p">[</span><span class="n">phenotypes</span><span class="p">],</span>
+        <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Check that phenotypes is adata.obs</span>
+    <span class="k">if</span> <span class="n">regions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_annotation</span><span class="p">(</span>
+            <span class="n">adata</span><span class="p">,</span>
+            <span class="n">annotations</span><span class="o">=</span><span class="p">[</span><span class="n">regions</span><span class="p">],</span>
+            <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">check_table</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">tables</span><span class="o">=</span><span class="n">spatial_key</span><span class="p">,</span>
+        <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Check the values of normalize</span>
+    <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">normalize</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;total_cells&#39;</span><span class="p">,</span> <span class="s1">&#39;bin_area&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">((</span><span class="sa">f</span><span class="s1">&#39;normalize must be &quot;total_cells&quot;, &quot;bin_area&quot;&#39;</span>
+                          <span class="sa">f</span><span class="s1">&#39; or None. Got &quot;</span><span class="si">{</span><span class="n">normalize</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Check that the associated_table_name does not exist.</span>
+    <span class="c1"># Raise a warning othewise</span>
+    <span class="n">check_table</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">tables</span><span class="o">=</span><span class="n">associated_table_name</span><span class="p">,</span>
+        <span class="n">should_exist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">warning</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+    <span class="c1"># Convert the phenotypes to integers using label encoder</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">phenotypes</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">le</span> <span class="o">=</span> <span class="n">LabelEncoder</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">n_phenotypes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">le</span><span class="o">.</span><span class="n">classes_</span><span class="p">)</span>
+
+    <span class="c1"># Create a place holder for the neighborhood profile</span>
+    <span class="n">all_cells_profiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">n_phenotypes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># If regions is None, use all cells in adata</span>
+    <span class="k">if</span> <span class="n">regions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Calculate the neighborhood profile for every slide</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">region</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">regions</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()):</span>
+            <span class="n">adata_region</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">regions</span><span class="p">]</span> <span class="o">==</span> <span class="n">region</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing region:</span><span class="si">{</span><span class="n">region</span><span class="si">}</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">                        n_cells:</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">adata_region</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">positions</span> <span class="o">=</span> <span class="n">adata_region</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">spatial_key</span><span class="p">]</span>
+            <span class="n">labels_id</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">adata_region</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">phenotypes</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">region_profiles</span> <span class="o">=</span> <span class="n">_neighborhood_profile_core</span><span class="p">(</span>
+               <span class="n">positions</span><span class="p">,</span>
+               <span class="n">labels_id</span><span class="p">,</span>
+               <span class="n">n_phenotypes</span><span class="p">,</span>
+               <span class="n">distances</span><span class="p">,</span>
+               <span class="n">normalize</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Updated profiles of the cells of the current slide</span>
+            <span class="n">all_cells_profiles</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">regions</span><span class="p">]</span> <span class="o">==</span> <span class="n">region</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+               <span class="n">region_profiles</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">((</span><span class="s2">&quot;Processing all cells as a single region.&quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot; n_cells:</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">spatial_key</span><span class="p">]</span>
+        <span class="n">labels_id</span> <span class="o">=</span> <span class="n">le</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="n">all_cells_profiles</span> <span class="o">=</span> <span class="n">_neighborhood_profile_core</span><span class="p">(</span>
+            <span class="n">positions</span><span class="p">,</span>
+            <span class="n">labels_id</span><span class="p">,</span>
+            <span class="n">n_phenotypes</span><span class="p">,</span>
+            <span class="n">distances</span><span class="p">,</span>
+            <span class="n">normalize</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add the neighborhood profile to the AnnData object</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">associated_table_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_cells_profiles</span>
+
+    <span class="c1"># Store the bins and the lables in uns</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bins&quot;</span><span class="p">:</span> <span class="n">distances</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="n">le</span><span class="o">.</span><span class="n">classes_</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">associated_table_name</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The analysis already contains the </span><span class="se">\</span>
+<span class="s2">                       unstructured value:</span><span class="si">{</span><span class="n">associated_table_name</span><span class="si">}</span><span class="s2">. </span><span class="se">\</span>
+<span class="s2">                       It will be overwriten&quot;</span><span class="p">)</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="n">associated_table_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary</span></div>
+
+
+
+<div class="viewcode-block" id="_neighborhood_profile_core">
+<a class="viewcode-back" href="../../modules/spatial_analysis._neighborhood_profile_core.html#spac.spatial_analysis._neighborhood_profile_core">[docs]</a>
+<span class="k">def</span> <span class="nf">_neighborhood_profile_core</span><span class="p">(</span>
+        <span class="n">coord</span><span class="p">,</span>
+        <span class="n">phenotypes</span><span class="p">,</span>
+        <span class="n">n_phenotypes</span><span class="p">,</span>
+        <span class="n">distances_bins</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the neighborhood profile for every cell in a region.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coord : numpy.ndarray</span>
+<span class="sd">        The coordinates of the cells in the region. Should be a 2D array of</span>
+<span class="sd">        shape (n_cells, 2) representing x, y coordinates.</span>
+
+<span class="sd">    phenotypes : numpy.ndarray</span>
+<span class="sd">        The phenotypes of the cells in the region.</span>
+
+<span class="sd">    n_phenotypes : int</span>
+<span class="sd">        The number of unique phenotypes in the region.</span>
+
+<span class="sd">    distances_bins : list</span>
+<span class="sd">        The bins defining the distance ranges for the neighborhood profile.</span>
+
+<span class="sd">    normalize : str or None, optional</span>
+<span class="sd">        If &#39;total_cells&#39;, normalize the neighborhood profile based on the</span>
+<span class="sd">        total number of cells in each bin.</span>
+<span class="sd">        If &#39;bin_area&#39;, normalize the neighborhood profile based on the area</span>
+<span class="sd">        of every bin.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        A 3D array containing the neighborhood profile for every cell in the</span>
+<span class="sd">        region. The dimensions are (n_cells, n_phenotypes, n_intervals).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The function calculates the neighborhood profile for each cell, which</span>
+<span class="sd">      represents the distribution of neighboring cells&#39; phenotypes within</span>
+<span class="sd">      different distance intervals.</span>
+<span class="sd">    - The &#39;distances_bins&#39; parameter should be a list defining the bins for</span>
+<span class="sd">      the distance intervals. It is assumed that the bins are incremental,</span>
+<span class="sd">      starting from 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO Check that distances bins is incremental</span>
+
+    <span class="n">max_distance</span> <span class="o">=</span> <span class="n">distances_bins</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">kdtree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+
+    <span class="c1"># indexes is a list of neighbors coordinate for every</span>
+    <span class="c1"># cell</span>
+    <span class="n">indexes</span> <span class="o">=</span> <span class="n">kdtree</span><span class="o">.</span><span class="n">query_ball_tree</span><span class="p">(</span><span class="n">kdtree</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">max_distance</span><span class="p">)</span>
+
+    <span class="c1"># Create phenotype bins to include the integer equivalent of</span>
+    <span class="c1"># every phenotype to use the histogram2d function instead of</span>
+    <span class="c1"># a for loop over every phenotype</span>
+    <span class="n">phenotype_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_phenotypes</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">n_intervals</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances_bins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">neighborhood_profile</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">neighbors</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indexes</span><span class="p">):</span>
+
+        <span class="c1"># Query_ball_tree will include the point itself</span>
+        <span class="n">neighbors</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="c1"># To potentially save on calculating the histogram</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">neighborhood_profile</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_phenotypes</span><span class="p">,</span> <span class="n">n_intervals</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">neighbor_coords</span> <span class="o">=</span> <span class="n">coord</span><span class="p">[</span><span class="n">neighbors</span><span class="p">]</span>
+            <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">distance_matrix</span><span class="p">(</span><span class="n">coord</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">neighbor_coords</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">neighbors_phenotypes</span> <span class="o">=</span> <span class="n">phenotypes</span><span class="p">[</span><span class="n">neighbors</span><span class="p">]</span>
+            <span class="c1"># Returns a 2D histogram of size n_phenotypes * n_intervals</span>
+            <span class="n">histograms_array</span><span class="p">,</span> <span class="n">_</span> <span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">neighbors_phenotypes</span><span class="p">,</span>
+                                                     <span class="n">dist_matrix</span><span class="p">,</span>
+                                                     <span class="n">bins</span><span class="o">=</span><span class="p">[</span>
+                                                       <span class="n">phenotype_bins</span><span class="p">,</span>
+                                                       <span class="n">distances_bins</span>
+                                                       <span class="p">])</span>
+            <span class="n">neighborhood_profile</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">histograms_array</span><span class="p">)</span>
+
+    <span class="n">neighborhood_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">neighborhood_profile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">&quot;total_cells&quot;</span><span class="p">:</span>
+        <span class="n">bins_sum</span> <span class="o">=</span> <span class="n">neighborhood_array</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">bins_sum</span><span class="p">[</span><span class="n">bins_sum</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">neighborhood_array</span> <span class="o">=</span> <span class="n">neighborhood_array</span> <span class="o">/</span> <span class="n">bins_sum</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">elif</span> <span class="n">normalize</span> <span class="o">==</span> <span class="s2">&quot;bin_area&quot;</span><span class="p">:</span>
+        <span class="n">circles_areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">distances_bins</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">bins_areas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">circles_areas</span><span class="p">)</span>
+        <span class="n">neighborhood_array</span> <span class="o">=</span> <span class="n">neighborhood_array</span> <span class="o">/</span> <span class="n">bins_areas</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">neighborhood_array</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_nearest_neighbor">
+<a class="viewcode-back" href="../../spac.html#spac.spatial_analysis.calculate_nearest_neighbor">[docs]</a>
+<span class="k">def</span> <span class="nf">calculate_nearest_neighbor</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">annotation</span><span class="p">,</span>
+    <span class="n">spatial_associated_table</span><span class="o">=</span><span class="s1">&#39;spatial&#39;</span><span class="p">,</span>
+    <span class="n">imageid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;spatial_distance&#39;</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the shortest distance from each cell to the nearest cell of</span>
+<span class="sd">    each phenotype `scimap.tl.spatial_distance`, and stores the resulted</span>
+<span class="sd">    DataFrame in `adata.obsm[label]`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        Annotated data matrix with spatial information.</span>
+<span class="sd">    annotation : str</span>
+<span class="sd">        Column name in `adata.obs` containing cell annotationsi (i.e.</span>
+<span class="sd">        phenotypes).</span>
+<span class="sd">    spatial_associated_table : str, optional</span>
+<span class="sd">        Key in `adata.obsm` where spatial coordinates are stored. Default is</span>
+<span class="sd">        &#39;spatial&#39;.</span>
+<span class="sd">    imageid : str, optional</span>
+<span class="sd">        The column in `adata.obs` specifying image IDs. If None,</span>
+<span class="sd">        a dummy image column is created temporarily. Spatial distances are</span>
+<span class="sd">        computed across the entire dataseti as if it&#39;s one image.</span>
+<span class="sd">    label : str, optional</span>
+<span class="sd">        The key under which results are stored  in `adata.obsm`. Default is</span>
+<span class="sd">        &#39;spatial_distance&#39;.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        If True, prints progress messages. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Modifies `adata` in place by storing a DataFrame of</span>
+<span class="sd">        spatial distances in `adata.obsm[label]`.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    For a dataset with two cells (CellA, CellB) both of the same phenotype</span>
+<span class="sd">    &quot;type1&quot;, the output might look like:</span>
+
+<span class="sd">    &gt;&gt;&gt; adata.obsm[&#39;spatial_distance&#39;]</span>
+<span class="sd">           type1</span>
+<span class="sd">    CellA    0.0</span>
+<span class="sd">    CellB    0.0</span>
+
+<span class="sd">    For a dataset with two phenotypes &quot;type1&quot; and &quot;type2&quot;, the output might</span>
+<span class="sd">    look like:</span>
+
+<span class="sd">    &gt;&gt;&gt; adata.obsm[&#39;spatial_distance&#39;]</span>
+<span class="sd">           type1     type2</span>
+<span class="sd">    CellA   0.00  1.414214</span>
+<span class="sd">    CellB  1.414214  0.00</span>
+
+<span class="sd">    Input:</span>
+<span class="sd">        adata.obs:</span>
+<span class="sd">            cell_type   imageid</span>
+<span class="sd">            type1       image1</span>
+<span class="sd">            type1       image1</span>
+<span class="sd">            type2       image1</span>
+
+<span class="sd">        adata.obsm[&#39;spatial&#39;]:</span>
+<span class="sd">            [[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]]</span>
+
+<span class="sd">    Output stored in adata.obsm[&#39;spatial_distance&#39;]:</span>
+<span class="sd">            type1   type2</span>
+<span class="sd">        0    0.0    1.414</span>
+<span class="sd">        1    1.414  0.0</span>
+<span class="sd">        2    2.236  1.0</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `spatial_associated_table` is not found in `adata.obsm`.</span>
+<span class="sd">        If spatial coordinates are missing or invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Input validation for annotation</span>
+    <span class="n">check_annotation</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span>
+
+    <span class="c1"># Validate and extract spatial coordinates</span>
+    <span class="n">check_table</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">tables</span><span class="o">=</span><span class="n">spatial_associated_table</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">spatial_associated_table</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The input data must include coordinates with at least &quot;</span>
+            <span class="s2">&quot;two dimensions, such as X and Y positions.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Check for missing coordinates</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">missing_cells</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Missing values found in spatial coordinates for cells &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;at indices: </span><span class="si">{</span><span class="n">missing_cells</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Preparing data for spatial distance calculation...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Add coordinates to adata.obs temporarily</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_x_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_y_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;_z_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">use_z</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">use_z</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Handle imageid logic</span>
+    <span class="n">dummy_column_created</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">original_imageid</span> <span class="o">=</span> <span class="n">imageid</span>
+    <span class="k">if</span> <span class="n">imageid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dummy_column_created</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">imageid</span> <span class="o">=</span> <span class="s1">&#39;_dummy_imageid&#39;</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">imageid</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;dummy_image&#39;</span>  <span class="c1"># All cells belong to one &#39;image&#39;</span>
+
+    <span class="c1"># Run scimap&#39;s spatial_distance function</span>
+    <span class="n">sm</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">spatial_distance</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">x_coordinate</span><span class="o">=</span><span class="s1">&#39;_x_coord&#39;</span><span class="p">,</span>
+        <span class="n">y_coordinate</span><span class="o">=</span><span class="s1">&#39;_y_coord&#39;</span><span class="p">,</span>
+        <span class="n">z_coordinate</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;_z_coord&#39;</span> <span class="k">if</span> <span class="n">use_z</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">phenotype</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span>
+        <span class="n">imageid</span><span class="o">=</span><span class="n">imageid</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">label</span>
+    <span class="p">)</span>
+
+    <span class="c1"># The scimap function stores the result in adata.uns[label].</span>
+    <span class="c1"># Move it to adata.obsm.</span>
+    <span class="n">result_df</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>  <span class="c1"># remove from uns and capture</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">result_df</span>  <span class="c1"># store in obsm</span>
+
+    <span class="c1"># Remove temporary coordinates from adata.obs</span>
+    <span class="n">drop_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_x_coord&#39;</span><span class="p">,</span> <span class="s1">&#39;_y_coord&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">use_z</span><span class="p">:</span>
+        <span class="n">drop_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;_z_coord&#39;</span><span class="p">)</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">drop_cols</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Remove dummy column if it was created</span>
+    <span class="k">if</span> <span class="n">dummy_column_created</span><span class="p">:</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">imageid</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+        <span class="c1"># Restore imageid to None to reflect the input</span>
+        <span class="n">imageid</span> <span class="o">=</span> <span class="n">original_imageid</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spatial distances stored in adata.obsm[&#39;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&#39;]&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Preview of the distance DataFrame:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

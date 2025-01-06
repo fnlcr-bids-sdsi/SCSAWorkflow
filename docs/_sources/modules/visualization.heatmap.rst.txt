@@ -1,0 +1,1 @@
+.. autofunction:: spac.visualization.heatmap

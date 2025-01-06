@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/phenotyping.assign_manual_phenotypes.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="py function">
+<dt class="sig sig-object py" id="spac.phenotyping.assign_manual_phenotypes">
+<span class="sig-prename descclassname"><span class="pre">spac.phenotyping.</span></span><span class="sig-name descname"><span class="pre">assign_manual_phenotypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phenotypes_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'manual_phenotype'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_binary_code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spac/phenotyping.html#assign_manual_phenotypes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spac.phenotyping.assign_manual_phenotypes" title="Link to this definition"></a></dt>
+<dd><p>Assign manual phenotypes to the DataFrame and generate summaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_df</strong> (<em>pandas.DataFrame</em>) – The DataFrame to which manual phenotypes will be assigned.</p></li>
+<li><p><strong>phenotypes_df</strong> (<em>pandas.DataFrame</em>) – <p>A DataFrame containing phenotype definitions with columns:
+- “phenotype_name” : str</p>
+<blockquote>
+<div><p>The name of the phenotype.</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>”phenotype_code”<span class="classifier">str</span></dt><dd><p>The code used to decode the phenotype.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+<li><p><strong>annotation</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the column to store the combined phenotype. Default is
+“manual_phenotype”.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – Prefix to be added to the column names. Default is ‘’.</p></li>
+<li><p><strong>suffix</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix to be added to the column names. Default is ‘’.</p></li>
+<li><p><strong>multiple</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to concatenate the names of multiple positive phenotypes.
+Default is True.</p></li>
+<li><p><strong>drop_binary_code</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to drop the binary phenotype columns. Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary with the following keys:
+- “phenotypes_counts”: dict</p>
+<blockquote>
+<div><p>Counts of cells matching each defined phenotype.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>”assigned_phenotype_counts”: dict</dt><dd><p>Counts of cells matching different numbers of phenotypes.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”multiple_phenotypes_summary”: pandas.DataFrame</dt><dd><p>Summary of cells with multiple phenotypes.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The function generates a combined phenotype column, prints summaries of
+cells matching multiple phenotypes, and returns a dictionary with
+detailed counts and summaries.</p>
+<p class="rubric">Examples</p>
+<p>Suppose <cite>data_df</cite> is a DataFrame with binary phenotype columns and
+<cite>phenotypes_df</cite> contains the following definitions:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;cd4_phenotype&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;cd8_phenotype&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phenotypes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;phenotype_name&quot;</span><span class="p">:</span> <span class="s2">&quot;cd4_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype_code&quot;</span><span class="p">:</span> <span class="s2">&quot;cd4+&quot;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;phenotype_name&quot;</span><span class="p">:</span> <span class="s2">&quot;cd8_cells&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype_code&quot;</span><span class="p">:</span> <span class="s2">&quot;cd8+&quot;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;phenotype_name&quot;</span><span class="p">:</span> <span class="s2">&quot;cd4_cd8&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype_code&quot;</span><span class="p">:</span> <span class="s2">&quot;cd4+cd8+&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">assign_manual_phenotypes</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data_df</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">phenotypes_df</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">annotation</span><span class="o">=</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;_phenotype&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">multiple</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <cite>data_df</cite> DataFrame will be edited in place to include a new column
+<cite>“manual”</cite> with the combined phenotype labels:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data_df</span><span class="p">)</span>
+<span class="go">   cd4_phenotype  cd8_phenotype manual</span>
+<span class="go">0              0              0 no_label</span>
+<span class="go">1              1              0 cd4_cells</span>
+<span class="go">2              0              1 cd8_cells</span>
+<span class="go">3              1              1 cd8_cells, cd4_cd8</span>
+</pre></div>
+</div>
+<p>The result dictionary contains counts and summaries as follows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;phenotypes_counts&quot;</span><span class="p">])</span>
+<span class="go">{&#39;cd4_cells&#39;: 1, &#39;cd8_cells&#39;: 2, &#39;cd4_cd8&#39;: 1}</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;assigned_phenotype_counts&quot;</span><span class="p">])</span>
+<span class="go">0    1</span>
+<span class="go">1    2</span>
+<span class="go">2    1</span>
+<span class="go">Name: num_phenotypes, dtype: int64</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;multiple_phenotypes_summary&quot;</span><span class="p">])</span>
+<span class="go">               manual  count</span>
+<span class="go">0  cd8_cells, cd4_cd8      1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

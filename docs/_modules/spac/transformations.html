@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spac.transformations &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">spac.transformations</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for spac.transformations</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scanpy</span> <span class="k">as</span> <span class="nn">sc</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">anndata</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">scanpy.external</span> <span class="k">as</span> <span class="nn">sce</span>
+<span class="kn">from</span> <span class="nn">spac.utils</span> <span class="kn">import</span> <span class="n">check_table</span><span class="p">,</span> <span class="n">check_annotation</span><span class="p">,</span> <span class="n">check_feature</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">import</span> <span class="nn">umap</span> <span class="k">as</span> <span class="nn">umap_lib</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">issparse</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">numpy.lib</span> <span class="kn">import</span> <span class="n">NumpyVersion</span>
+
+
+<span class="c1"># Configure logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;SPAC:</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="phenograph_clustering">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.phenograph_clustering">[docs]</a>
+<span class="k">def</span> <span class="nf">phenograph_clustering</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">,</span>
+        <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">k</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_annotation</span><span class="o">=</span><span class="s2">&quot;phenograph&quot;</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate automatic phenotypes using phenograph.</span>
+
+<span class="sd">    The function will add these two attributes to `adata`:</span>
+<span class="sd">    `.obs[&quot;phenograph&quot;]`</span>
+<span class="sd">        The assigned int64 class by phenograph</span>
+
+<span class="sd">    `.uns[&quot;phenograph_features&quot;]`</span>
+<span class="sd">        The features used to calculate the phenograph clusters</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">       The AnnData object.</span>
+
+<span class="sd">    features : list of str</span>
+<span class="sd">        The variables that would be included in creating the phenograph</span>
+<span class="sd">        clusters.</span>
+
+<span class="sd">    layer : str, optional</span>
+<span class="sd">        The layer to be used in calculating the phengraph clusters.</span>
+
+<span class="sd">    k : int, optional</span>
+<span class="sd">        The number of nearest neighbor to be used in creating the graph.</span>
+
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Random seed for reproducibility.</span>
+
+<span class="sd">    output_annotation : str, optional</span>
+<span class="sd">        The name of the output layer where the clusters are stored.</span>
+
+<span class="sd">    associated_table : str, optional</span>
+<span class="sd">        If set, use the corresponding key `adata.obsm` to calcuate the</span>
+<span class="sd">        Phenograph. Takes priority over the layer argument.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        Updated AnnData object with the phenograph clusters</span>
+<span class="sd">        stored in `adata.obs[output_annotation]`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_validate_transformation_inputs</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="n">associated_table</span><span class="p">,</span>
+        <span class="n">features</span><span class="o">=</span><span class="n">features</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`k` must be a positive integer&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_select_input_features</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="n">associated_table</span><span class="p">,</span>
+        <span class="n">features</span><span class="o">=</span><span class="n">features</span>
+    <span class="p">)</span>
+
+    <span class="n">phenograph_out</span> <span class="o">=</span> <span class="n">sce</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">phenograph</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                       <span class="n">clustering_algo</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
+                                       <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                                       <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">output_annotation</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">phenograph_out</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;phenograph_features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">features</span></div>
+
+
+
+<div class="viewcode-block" id="get_cluster_info">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.get_cluster_info">[docs]</a>
+<span class="k">def</span> <span class="nf">get_cluster_info</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve information about clusters based on specific annotation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        The AnnData object.</span>
+<span class="sd">    annotation : str</span>
+<span class="sd">        Annotation in adata.obs for cluster info.</span>
+<span class="sd">    features : list of str, optional</span>
+<span class="sd">        Features (e.g., markers) for cluster metrics.</span>
+<span class="sd">        Defaults to all features in adata.var_names.</span>
+<span class="sd">    layer : str, optional</span>
+<span class="sd">        The layer to be used in the aggregate summaries.</span>
+<span class="sd">        If None, uses adata.X.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        DataFrame with metrics for each cluster including the percentage of</span>
+<span class="sd">        each cluster to the whole sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use utility functions for input validation</span>
+    <span class="n">check_annotation</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">check_feature</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">layer</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">tables</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span>
+
+    <span class="c1"># Convert data matrix or specified layer to DataFrame directly</span>
+    <span class="k">if</span> <span class="n">layer</span><span class="p">:</span>
+        <span class="n">data_df</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">to_df</span><span class="p">(</span><span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data_df</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span>
+
+    <span class="c1"># Count cells in each cluster</span>
+    <span class="n">cluster_counts</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">cluster_counts</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">annotation</span><span class="p">,</span> <span class="s2">&quot;Number of Cells&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Calculate the percentage of cells in each cluster</span>
+    <span class="n">total_cells</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cluster_counts</span><span class="p">[</span><span class="s1">&#39;Percentage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">cluster_counts</span><span class="p">[</span><span class="s1">&#39;Number of Cells&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">total_cells</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+
+    <span class="c1"># Initialize DataFrame for cluster metrics</span>
+    <span class="n">cluster_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">annotation</span><span class="p">:</span> <span class="n">cluster_counts</span><span class="p">[</span><span class="n">annotation</span><span class="p">]})</span>
+
+    <span class="c1"># Add cluster annotation</span>
+    <span class="n">data_df</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="c1"># Calculate statistics for each feature in each cluster</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+        <span class="n">grouped</span> <span class="o">=</span> <span class="n">data_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">annotation</span><span class="p">)[</span><span class="n">feature</span><span class="p">]</span>\
+                            <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">])</span>\
+                            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">grouped</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="n">annotation</span> <span class="k">else</span> <span class="n">annotation</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">grouped</span><span class="o">.</span><span class="n">columns</span>
+        <span class="p">]</span>
+        <span class="n">cluster_metrics</span> <span class="o">=</span> <span class="n">cluster_metrics</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">grouped</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Merge cluster counts and percentage</span>
+    <span class="n">cluster_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">cluster_metrics</span><span class="p">,</span> <span class="n">cluster_counts</span><span class="p">,</span>
+        <span class="n">on</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cluster_metrics</span></div>
+
+
+
+<div class="viewcode-block" id="tsne">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.tsne">[docs]</a>
+<span class="k">def</span> <span class="nf">tsne</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform t-SNE transformation on specific layer information.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">       The AnnData object.</span>
+<span class="sd">    layer : str</span>
+<span class="sd">        Layer for phenograph cluster calculation.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Parameters for scanpy.tl.tsne function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        Updated AnnData object with t-SNE coordinates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If a layer is provided, it&#39;s transferred to &#39;obsm&#39; for t-SNE computation</span>
+    <span class="c1"># in scanpy.tl.tsne, which defaults to using the &#39;X&#39; data matrix if not.</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">anndata</span><span class="o">.</span><span class="n">AnnData</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adata must be an AnnData object.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">layer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Layer &#39;</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">&#39; not found in adata.layers.&quot;</span><span class="p">)</span>
+
+        <span class="n">tsne_obsm_name</span> <span class="o">=</span> <span class="n">layer</span> <span class="o">+</span> <span class="s2">&quot;_tsne&quot;</span>
+        <span class="n">X_tsne</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">to_df</span><span class="p">(</span><span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">tsne_obsm_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_tsne</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tsne_obsm_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">tsne</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">use_rep</span><span class="o">=</span><span class="n">tsne_obsm_name</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+
+<div class="viewcode-block" id="run_umap">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.run_umap">[docs]</a>
+<span class="k">def</span> <span class="nf">run_umap</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span>
+        <span class="n">min_dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">transform_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+        <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_derived_feature</span><span class="o">=</span><span class="s1">&#39;X_umap&#39;</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform UMAP analysis on the specific layer of the AnnData object</span>
+<span class="sd">    or the default data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        Annotated data matrix.</span>
+<span class="sd">    n_neighbors : int, default=75</span>
+<span class="sd">        Number of neighbors to consider when constructing the UMAP. This</span>
+<span class="sd">        influences the balance between preserving local and global structures</span>
+<span class="sd">        in the data.</span>
+<span class="sd">    min_dist : float, default=0.1</span>
+<span class="sd">        Minimum distance between points in the UMAP space. Controls how</span>
+<span class="sd">        tightly the embedding is allowed to compress points together.</span>
+<span class="sd">    n_components : int, default=2</span>
+<span class="sd">        Number of dimensions for embedding.</span>
+<span class="sd">    metric : str, optional</span>
+<span class="sd">        Metric to compute distances in high dimensional space.</span>
+<span class="sd">        Check `https://umap-learn.readthedocs.io/en/latest/api.html` for</span>
+<span class="sd">        options. The default is &#39;euclidean&#39;.</span>
+<span class="sd">    random_state : int, default=0</span>
+<span class="sd">        Seed used by the random number generator(RNG) during UMAP fitting.</span>
+<span class="sd">    transform_seed : int, default=42</span>
+<span class="sd">        RNG seed during UMAP transformation.</span>
+<span class="sd">    layer : str, optional</span>
+<span class="sd">        Layer of AnnData object for UMAP. Defaults to `adata.X`.</span>
+<span class="sd">    output_derived_feature : str, default=&#39;X_umap&#39;</span>
+<span class="sd">        The name of the column in adata.obsm that will contain the</span>
+<span class="sd">        umap coordinates.</span>
+<span class="sd">    associated_table : str, optional</span>
+<span class="sd">        If set, use the corresponding key `adata.obsm` to calcuate the</span>
+<span class="sd">        UMAP. Takes priority over the layer argument.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        Updated AnnData object with UMAP coordinates stored in the `obsm`</span>
+<span class="sd">        attribute. The key for the UMAP embedding in `obsm` is &quot;X_umap&quot; by</span>
+<span class="sd">        default.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_validate_transformation_inputs</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="n">associated_table</span>
+    <span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_select_input_features</span><span class="p">(</span>
+        <span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+        <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="o">=</span><span class="n">associated_table</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Convert data to pandas DataFrame for better memory handling</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+    <span class="c1"># Create and configure the UMAP model</span>
+    <span class="n">umap_model</span> <span class="o">=</span> <span class="n">umap_lib</span><span class="o">.</span><span class="n">UMAP</span><span class="p">(</span>
+        <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbors</span><span class="p">,</span>
+        <span class="n">min_dist</span><span class="o">=</span><span class="n">min_dist</span><span class="p">,</span>
+        <span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
+        <span class="n">low_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+        <span class="n">transform_seed</span><span class="o">=</span><span class="n">transform_seed</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Fit and transform the data with the UMAP model</span>
+    <span class="n">embedding</span> <span class="o">=</span> <span class="n">umap_model</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># Store the UMAP coordinates back into the AnnData object under the</span>
+    <span class="c1"># output_derived_feature key</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">output_derived_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">embedding</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+
+<div class="viewcode-block" id="_validate_transformation_inputs">
+<a class="viewcode-back" href="../../modules/transformations._validate_transformation_inputs.html#spac.transformations._validate_transformation_inputs">[docs]</a>
+<span class="k">def</span> <span class="nf">_validate_transformation_inputs</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">:</span> <span class="n">anndata</span><span class="p">,</span>
+        <span class="n">layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">associated_table</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validate inputs for transformation functions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        Annotated data matrix.</span>
+<span class="sd">    layer : str, optional</span>
+<span class="sd">        Name of the layer in `adata` to use for transformation.</span>
+<span class="sd">    associated_table : str, optional</span>
+<span class="sd">        Name of the key in `obsm` that contains the numpy array.</span>
+<span class="sd">    features : list of str or str, optional</span>
+<span class="sd">        Names of features to use for transformation.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If both `associated_table` and `layer` are specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">associated_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both&quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot; &#39;associated table&#39;:&#39;</span><span class="si">{</span><span class="n">associated_table</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot; and &#39;table&#39;:&#39;</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">&#39;. Please choose one.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">associated_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+                    <span class="n">tables</span><span class="o">=</span><span class="n">associated_table</span><span class="p">,</span>
+                    <span class="n">should_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">associated_table</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="o">=</span><span class="n">adata</span><span class="p">,</span>
+                    <span class="n">tables</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_feature</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_select_input_features">
+<a class="viewcode-back" href="../../modules/transformations._select_input_features.html#spac.transformations._select_input_features">[docs]</a>
+<span class="k">def</span> <span class="nf">_select_input_features</span><span class="p">(</span><span class="n">adata</span><span class="p">:</span> <span class="n">anndata</span><span class="p">,</span>
+                           <span class="n">layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">associated_table</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">features</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+
+                           <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Selects the numpy array to be used as input for transformations</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        Annotated data matrix.</span>
+<span class="sd">    layer : str, optional</span>
+<span class="sd">        Layer of AnnData object for UMAP. Defaults to `None`.</span>
+<span class="sd">    associated_table : str, optional</span>
+<span class="sd">        Name of the key in `adata.obsm` that contains the numpy array.</span>
+<span class="sd">        Defaults to `None`.</span>
+<span class="sd">    features : str or List[str], optional</span>
+<span class="sd">        Names of the features to select from layer. If None, all features are</span>
+<span class="sd">        selected. Defaults to None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The selected numpy array.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">associated_table</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Flatten the obsm numpy array before returning it</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using the associated table:&quot;</span><span class="si">{</span><span class="n">associated_table</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="n">np_array</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">associated_table</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">np_array</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="k">if</span> <span class="n">layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using the table:&quot;</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">features</span><span class="p">]</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using features:&quot;</span><span class="si">{</span><span class="n">features</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+            <span class="n">np_array</span> <span class="o">=</span> <span class="n">np_array</span><span class="p">[:,</span>
+                                <span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">get_loc</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">np_array</span></div>
+
+
+
+<div class="viewcode-block" id="batch_normalize">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.batch_normalize">[docs]</a>
+<span class="k">def</span> <span class="nf">batch_normalize</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">output_layer</span><span class="p">,</span>
+                    <span class="n">input_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adjust the features of every marker using a normalization method.</span>
+
+<span class="sd">    The normalization methods are summarized here:</span>
+<span class="sd">    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8723144/</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">         The AnnData object.</span>
+
+<span class="sd">    annotation: str</span>
+<span class="sd">        The name of the annotation in `adata` to define batches.</span>
+
+<span class="sd">    output_layer : str</span>
+<span class="sd">        The name of the new layer to add to the anndata object for storing</span>
+<span class="sd">        normalized data.</span>
+
+<span class="sd">    input_layer : str, optional</span>
+<span class="sd">        The name of the layer from which to read data. If None, read from `.X`.</span>
+
+<span class="sd">    method : {&quot;median&quot;, &quot;Q50&quot;, &quot;Q75&quot;, &quot;z-score&quot;}, default &quot;median&quot;</span>
+<span class="sd">        The normalization method to use.</span>
+
+<span class="sd">    log : bool, default False</span>
+<span class="sd">        If True, take the log2 of features before normalization.</span>
+<span class="sd">        Ensure this is boolean.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use utility functions for input validation</span>
+    <span class="n">check_annotation</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotation</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">input_layer</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">tables</span><span class="o">=</span><span class="n">input_layer</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Argument &#39;log&#39; must be of type bool.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;log&#39; must be of type bool.&quot;</span><span class="p">)</span>
+
+    <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;Q50&quot;</span><span class="p">,</span> <span class="s2">&quot;Q75&quot;</span><span class="p">,</span> <span class="s2">&quot;z-score&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_methods</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unsupported normalization method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;allowed methods = </span><span class="si">{</span><span class="n">allowed_methods</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Create a copy of the input layer or &#39;.X&#39;</span>
+    <span class="k">if</span> <span class="n">input_layer</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">input_layer</span><span class="p">],</span>
+                                <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Logarithmic transformation if required</span>
+    <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">original</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data transformed with log2&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Initialize the batch annotation values</span>
+    <span class="n">batches</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span> <span class="ow">or</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Q50&quot;</span><span class="p">:</span>
+        <span class="n">all_batch_quantile</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Median for al cells: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">all_batch_quantile</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Q75&quot;</span><span class="p">:</span>
+        <span class="n">all_batch_quantile</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Q75 for all cells: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">all_batch_quantile</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;z-score&quot;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Z-score setup is handled in batch processing loop.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Normalize each batch</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+        <span class="n">batch_cells</span> <span class="o">=</span> <span class="n">original</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">==</span> <span class="n">batch</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing batch: </span><span class="si">{</span><span class="n">batch</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;original values:</span><span class="se">\n</span><span class="si">{</span><span class="n">batch_cells</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+            <span class="n">batch_median</span> <span class="o">=</span> <span class="n">batch_cells</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median for </span><span class="si">{</span><span class="n">batch</span><span class="si">}</span><span class="s2">: %s&quot;</span><span class="p">,</span> <span class="n">batch_median</span><span class="p">)</span>
+            <span class="n">original</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">==</span> <span class="n">batch</span><span class="p">)</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">batch_cells</span> <span class="o">+</span> <span class="p">(</span><span class="n">all_batch_quantile</span> <span class="o">-</span> <span class="n">batch_median</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Q50&quot;</span><span class="p">:</span>
+            <span class="n">batch_50quantile</span> <span class="o">=</span> <span class="n">batch_cells</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Q50 for </span><span class="si">{</span><span class="n">batch</span><span class="si">}</span><span class="s2">: %s&quot;</span><span class="p">,</span> <span class="n">batch_50quantile</span><span class="p">)</span>
+            <span class="n">original</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">==</span> <span class="n">batch</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">batch_cells</span> <span class="o">*</span> <span class="n">all_batch_quantile</span> <span class="o">/</span> <span class="n">batch_50quantile</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;Q75&quot;</span><span class="p">:</span>
+            <span class="n">batch_75quantile</span> <span class="o">=</span> <span class="n">batch_cells</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Q75 for </span><span class="si">{</span><span class="n">batch</span><span class="si">}</span><span class="s2">: %s&quot;</span><span class="p">,</span> <span class="n">batch_75quantile</span><span class="p">)</span>
+            <span class="n">original</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">==</span> <span class="n">batch</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">batch_cells</span> <span class="o">*</span> <span class="n">all_batch_quantile</span> <span class="o">/</span> <span class="n">batch_75quantile</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;z-score&quot;</span><span class="p">:</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">batch_cells</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="n">batch_cells</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># DataFrame.std() by default ddof=1</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mean for </span><span class="si">{</span><span class="n">batch</span><span class="si">}</span><span class="s2">: %s&quot;</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;std for </span><span class="si">{</span><span class="n">batch</span><span class="si">}</span><span class="s2">: %s&quot;</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>
+            <span class="c1"># Ensure std is not zero by using a minimal threshold (e.g., 1e-8)</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
+            <span class="n">original</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span> <span class="o">==</span> <span class="n">batch</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="p">(</span><span class="n">batch_cells</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+
+    <span class="c1"># Store normalized data in the specified output layer</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">output_layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">original</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Normalization completed. Data in layer &#39;</span><span class="si">{</span><span class="n">output_layer</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="rename_annotations">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.rename_annotations">[docs]</a>
+<span class="k">def</span> <span class="nf">rename_annotations</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">src_annotation</span><span class="p">,</span> <span class="n">dest_annotation</span><span class="p">,</span> <span class="n">mappings</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rename labels in a given annotation in an AnnData object based on a</span>
+<span class="sd">    provided dictionary. This function modifies the adata object in-place</span>
+<span class="sd">    and creates a new annotation column.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        The AnnData object.</span>
+<span class="sd">    src_annotation : str</span>
+<span class="sd">        Name of the column in adata.obs containing the original</span>
+<span class="sd">        labels of the source annotation.</span>
+<span class="sd">    dest_annotation : str</span>
+<span class="sd">        The name of the new column to be created in the AnnData object</span>
+<span class="sd">        containing the renamed labels.</span>
+<span class="sd">    mappings : dict</span>
+<span class="sd">        A dictionary mapping the original annotation labels to</span>
+<span class="sd">        the new labels.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; adata = your_anndata_object</span>
+<span class="sd">    &gt;&gt;&gt; src_annotation = &quot;phenograph&quot;</span>
+<span class="sd">    &gt;&gt;&gt; mappings = {</span>
+<span class="sd">    ...     &quot;0&quot;: &quot;group_8&quot;,</span>
+<span class="sd">    ...     &quot;1&quot;: &quot;group_2&quot;,</span>
+<span class="sd">    ...     &quot;2&quot;: &quot;group_6&quot;,</span>
+<span class="sd">    ...     # ...</span>
+<span class="sd">    ...     &quot;37&quot;: &quot;group_5&quot;,</span>
+<span class="sd">    ... }</span>
+<span class="sd">    &gt;&gt;&gt; dest_annotation = &quot;renamed_annotations&quot;</span>
+<span class="sd">    &gt;&gt;&gt; adata = rename_annotations(</span>
+<span class="sd">    ...     adata, src_annotation, dest_annotation, mappings)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use utility functions for input validation</span>
+    <span class="n">check_annotation</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">src_annotation</span><span class="p">)</span>
+
+    <span class="c1"># Inform the user about the data type of the original column</span>
+    <span class="n">original_dtype</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">src_annotation</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The data type of the original column &#39;</span><span class="si">{</span><span class="n">src_annotation</span><span class="si">}</span><span class="s2">&#39; is &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">original_dtype</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Convert the keys in mappings to the same data type as the unique values</span>
+    <span class="n">unique_values</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">src_annotation</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">mappings</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">type</span><span class="p">(</span><span class="n">unique_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])(</span><span class="n">key</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">mappings</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Identify and handle unmapped labels</span>
+    <span class="n">missing_mappings</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">unique_values</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mappings</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">missing_mappings</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Missing mappings for the following labels: </span><span class="si">{</span><span class="n">missing_mappings</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;They will be set to NaN in the &#39;</span><span class="si">{</span><span class="n">dest_annotation</span><span class="si">}</span><span class="s2">&#39; column.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">missing</span> <span class="ow">in</span> <span class="n">missing_mappings</span><span class="p">:</span>
+            <span class="n">mappings</span><span class="p">[</span><span class="n">missing</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># Assign NaN for missing mappings</span>
+
+    <span class="c1"># Create a new column based on the mappings</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">dest_annotation</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">src_annotation</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">mappings</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="normalize_features">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.normalize_features">[docs]</a>
+<span class="k">def</span> <span class="nf">normalize_features</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span>
+    <span class="n">low_quantile</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+    <span class="n">high_quantile</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span>
+    <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+    <span class="n">input_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">output_layer</span><span class="o">=</span><span class="s2">&quot;normalized_feature&quot;</span><span class="p">,</span>
+    <span class="n">per_batch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">annotation</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize the features stored in an AnnData object.</span>
+<span class="sd">    Any entry lower than the value corresponding to low_quantile of the</span>
+<span class="sd">    column will be assigned a value of low_quantile, and entry that</span>
+<span class="sd">    are greater than high_quantile value will be assigned as the value of</span>
+<span class="sd">    high_quantile.</span>
+<span class="sd">    Other entries will be normalized with</span>
+<span class="sd">    (values - quantile min)/(quantile max - quantile min).</span>
+<span class="sd">    Resulting column will have value ranged between [0, 1].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the provided input_layer exists in the AnnData object</span>
+    <span class="k">if</span> <span class="n">input_layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">tables</span><span class="o">=</span><span class="n">input_layer</span><span class="p">)</span>
+
+    <span class="c1"># Check if output_layer already exists and issue a warning if it does</span>
+    <span class="k">if</span> <span class="n">output_layer</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Layer &#39;</span><span class="si">{</span><span class="n">output_layer</span><span class="si">}</span><span class="s2">&#39; already exists. It will be overwritten &quot;</span>
+            <span class="s2">&quot;with the new transformed data.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">high_quantile</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;The high quantile should be a numeric value, currently got </span><span class="si">{}</span><span class="s2">&quot;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">high_quantile</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">low_quantile</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;The low quantile should be a numeric value, currently got </span><span class="si">{}</span><span class="s2">&quot;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">low_quantile</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">low_quantile</span> <span class="o">&gt;=</span> <span class="n">high_quantile</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The low quantile should be smaller than the high quantile, &quot;</span>
+            <span class="s2">&quot;current values are: low quantile: </span><span class="si">{}</span><span class="s2">, high_quantile: </span><span class="si">{}</span><span class="s2">&quot;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low_quantile</span><span class="p">,</span> <span class="n">high_quantile</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">high_quantile</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">high_quantile</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The high quantile value should be within (0, 1], current value:&quot;</span>
+            <span class="s2">&quot; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">high_quantile</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">low_quantile</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">low_quantile</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The low quantile value should be within [0, 1), current value: </span><span class="si">{}</span><span class="s2">&quot;</span>
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low_quantile</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">interpolation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;interpolation must be either &#39;nearest&#39; or &#39;linear&#39;, passed value&quot;</span>
+            <span class="s2">&quot; is: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interpolation</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Extract the data to transform</span>
+    <span class="k">if</span> <span class="n">input_layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">data_to_transform</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">input_layer</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data_to_transform</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+
+    <span class="c1"># Ensure data is in numpy array format</span>
+    <span class="n">data_to_transform</span> <span class="o">=</span> <span class="p">(</span><span class="n">data_to_transform</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+                         <span class="k">if</span> <span class="n">issparse</span><span class="p">(</span><span class="n">data_to_transform</span><span class="p">)</span>
+                         <span class="k">else</span> <span class="n">data_to_transform</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">per_batch</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">annotation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;annotation must be provided if per_batch is True.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">apply_per_batch</span><span class="p">(</span>
+            <span class="n">data_to_transform</span><span class="p">,</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;normalize_features&#39;</span><span class="p">,</span>
+            <span class="n">low_quantile</span><span class="o">=</span><span class="n">low_quantile</span><span class="p">,</span>
+            <span class="n">high_quantile</span><span class="o">=</span><span class="n">high_quantile</span><span class="p">,</span>
+            <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">normalize_features_core</span><span class="p">(</span>
+            <span class="n">data_to_transform</span><span class="p">,</span>
+            <span class="n">low_quantile</span><span class="o">=</span><span class="n">low_quantile</span><span class="p">,</span>
+            <span class="n">high_quantile</span><span class="o">=</span><span class="n">high_quantile</span><span class="p">,</span>
+            <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Store the transformed data in the specified output_layer</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">output_layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">transformed_data</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+
+<div class="viewcode-block" id="normalize_features_core">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.normalize_features_core">[docs]</a>
+<span class="k">def</span> <span class="nf">normalize_features_core</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">low_quantile</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">high_quantile</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span>
+                            <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize the features in a numpy array.</span>
+
+<span class="sd">    Any entry lower than the value corresponding to low_quantile of the column</span>
+<span class="sd">    will be assigned a value of low_quantile, and entries that are greater than</span>
+<span class="sd">    high_quantile value will be assigned as value of high_quantile.</span>
+<span class="sd">    Other entries will be normalized with</span>
+<span class="sd">    (values - quantile min)/(quantile max - quantile min).</span>
+<span class="sd">    Resulting column will have values ranged between [0, 1].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        The data to be normalized.</span>
+
+<span class="sd">    low_quantile : float, optional (default: 0.02)</span>
+<span class="sd">        The lower quantile to use for normalization. Determines the</span>
+<span class="sd">        minimum value after normalization.</span>
+<span class="sd">        Must be a positive float between [0,1).</span>
+
+<span class="sd">    high_quantile : float, optional (default: 0.98)</span>
+<span class="sd">        The higher quantile to use for normalization. Determines the</span>
+<span class="sd">        maximum value after normalization.</span>
+<span class="sd">        Must be a positive float between (0,1].</span>
+
+<span class="sd">    interpolation: str, optional (default: &quot;linear&quot;)</span>
+<span class="sd">        The interpolation method to use when selecting the value for</span>
+<span class="sd">        low and high quantile. Values can be &quot;nearest&quot; or &quot;linear&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The normalized data.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If low_quantile or high_quantile are not numeric.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If low_quantile is not less than high_quantile, or if they are</span>
+<span class="sd">        out of the range [0, 1] and (0, 1], respectively.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If interpolation is not one of the allowed values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">high_quantile</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;The high quantile should be a numeric value, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;currently got </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">high_quantile</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">low_quantile</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;The low quantile should be a numeric value, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;currently got </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">low_quantile</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">low_quantile</span> <span class="o">&lt;</span> <span class="n">high_quantile</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">high_quantile</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">high_quantile</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The high quantile value should be within &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(0, 1], current value: </span><span class="si">{</span><span class="n">high_quantile</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">low_quantile</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">low_quantile</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The low quantile value should be within &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;[0, 1), current value: </span><span class="si">{</span><span class="n">low_quantile</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The low quantile should be smaller than &quot;</span>
+            <span class="s2">&quot;the high quantile, current values are:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;low quantile: </span><span class="si">{</span><span class="n">low_quantile</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;high quantile: </span><span class="si">{</span><span class="n">high_quantile</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">interpolation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Interpolation must be either &#39;nearest&#39; or &#39;linear&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;passed value is: </span><span class="si">{</span><span class="n">interpolation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Version check for numpy using NumpyVersion</span>
+    <span class="n">numpy_version</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="k">if</span> <span class="n">NumpyVersion</span><span class="p">(</span><span class="n">numpy_version</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">NumpyVersion</span><span class="p">(</span><span class="s1">&#39;1.22.0&#39;</span><span class="p">):</span>
+        <span class="c1"># Use &#39;method&#39; argument for newer versions</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="n">low_quantile</span><span class="p">,</span> <span class="n">high_quantile</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">interpolation</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Use &#39;interpolation&#39; argument for older versions</span>
+        <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="n">low_quantile</span><span class="p">,</span> <span class="n">high_quantile</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span>
+        <span class="p">)</span>
+
+    <span class="n">qmin</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">qmax</span> <span class="o">=</span> <span class="n">quantiles</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># Calculate range_values and identify zero ranges</span>
+    <span class="n">range_values</span> <span class="o">=</span> <span class="n">qmax</span> <span class="o">-</span> <span class="n">qmin</span>
+    <span class="n">zero_range_mask</span> <span class="o">=</span> <span class="n">range_values</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="c1"># Prevent division by zero by setting zero ranges to 1 temporarily</span>
+    <span class="n">range_values</span> <span class="o">=</span> <span class="n">range_values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">range_values</span><span class="p">[</span><span class="n">zero_range_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="c1"># Clip raw values to the quantile range before normalization</span>
+    <span class="n">clipped_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">qmin</span><span class="p">,</span> <span class="n">qmax</span><span class="p">)</span>
+
+    <span class="c1"># Normalize the clipped values</span>
+    <span class="n">normalized_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">clipped_data</span> <span class="o">-</span> <span class="n">qmin</span><span class="p">)</span> <span class="o">/</span> <span class="n">range_values</span>
+
+    <span class="c1"># Correct normalized data for zero ranges</span>
+    <span class="n">normalized_data</span><span class="p">[:,</span> <span class="n">zero_range_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">normalized_data</span></div>
+
+
+
+<div class="viewcode-block" id="arcsinh_transformation">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.arcsinh_transformation">[docs]</a>
+<span class="k">def</span> <span class="nf">arcsinh_transformation</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">,</span> <span class="n">input_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">co_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">percentile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">output_layer</span><span class="o">=</span><span class="s2">&quot;arcsinh&quot;</span><span class="p">,</span> <span class="n">per_batch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply arcsinh transformation using a co-factor (fixed number) or a given</span>
+<span class="sd">    percentile of each feature. This transformation can be applied to the</span>
+<span class="sd">    entire dataset or per batch based on provided parameters.</span>
+
+<span class="sd">    Computes the co-factor or percentile for each biomarker individually,</span>
+<span class="sd">    ensuring proper scaling based on its unique range of expression levels.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        The AnnData object containing the data to transform.</span>
+<span class="sd">    input_layer : str, optional</span>
+<span class="sd">        The name of the layer in the AnnData object to transform.</span>
+<span class="sd">        If None, the main data matrix .X is used.</span>
+<span class="sd">    co_factor : float, optional</span>
+<span class="sd">        A fixed positive number to use as a co-factor for the transformation.</span>
+<span class="sd">    percentile : float, optional</span>
+<span class="sd">        The percentile is computed for each feature (column) individually.</span>
+<span class="sd">    output_layer : str, default=&quot;arcsinh&quot;</span>
+<span class="sd">        Name of the layer to put the transformed results. If it already exists,</span>
+<span class="sd">        it will be overwritten with a warning.</span>
+<span class="sd">    per_batch : bool, optional, default=False</span>
+<span class="sd">        Whether to apply the transformation per batch.</span>
+<span class="sd">    annotation : str, optional</span>
+<span class="sd">        The name of the annotation in `adata` to define batches. Required if</span>
+<span class="sd">        per_batch is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        The AnnData object with the transformed data stored in the specified</span>
+<span class="sd">        output_layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Validate input parameters</span>
+    <span class="k">if</span> <span class="n">co_factor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Both co_factor and percentile are None. Provide one to proceed.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">co_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Please specify either co_factor or percentile, not both.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">co_factor</span> <span class="ow">and</span> <span class="n">co_factor</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Co_factor should be a positive value. Received: &quot;</span><span class="si">{</span><span class="n">co_factor</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">percentile</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Percentile should be between 0 and 100. Received: &quot;</span><span class="si">{</span><span class="n">percentile</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Check if the provided input_layer exists in the AnnData object</span>
+    <span class="k">if</span> <span class="n">input_layer</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">tables</span><span class="o">=</span><span class="n">input_layer</span><span class="p">)</span>
+        <span class="n">data_to_transform</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">input_layer</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data_to_transform</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+
+    <span class="c1"># Ensure data is in numpy array format</span>
+    <span class="n">data_to_transform</span> <span class="o">=</span> <span class="n">data_to_transform</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> \
+        <span class="k">if</span> <span class="n">issparse</span><span class="p">(</span><span class="n">data_to_transform</span><span class="p">)</span> <span class="k">else</span> <span class="n">data_to_transform</span>
+
+    <span class="k">if</span> <span class="n">per_batch</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">annotation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;annotation must be provided if per_batch is True.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">check_annotation</span><span class="p">(</span>
+            <span class="n">adata</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="n">annotation</span><span class="p">,</span> <span class="n">parameter_name</span><span class="o">=</span><span class="s2">&quot;annotation&quot;</span>
+        <span class="p">)</span>
+        <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">apply_per_batch</span><span class="p">(</span>
+            <span class="n">data_to_transform</span><span class="p">,</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">annotation</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;arcsinh_transformation&#39;</span><span class="p">,</span> <span class="n">co_factor</span><span class="o">=</span><span class="n">co_factor</span><span class="p">,</span>
+            <span class="n">percentile</span><span class="o">=</span><span class="n">percentile</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Apply the arcsinh transformation using the core function</span>
+        <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">arcsinh_transformation_core</span><span class="p">(</span>
+            <span class="n">data_to_transform</span><span class="p">,</span> <span class="n">co_factor</span><span class="o">=</span><span class="n">co_factor</span><span class="p">,</span> <span class="n">percentile</span><span class="o">=</span><span class="n">percentile</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Check if output_layer already exists and issue a warning if it does</span>
+    <span class="k">if</span> <span class="n">output_layer</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Layer &#39;</span><span class="si">{</span><span class="n">output_layer</span><span class="si">}</span><span class="s2">&#39; already exists. It will be overwritten &quot;</span>
+            <span class="s2">&quot;with the new transformed data.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Store the transformed data in the specified output_layer</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">output_layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">transformed_data</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+
+<div class="viewcode-block" id="arcsinh_transformation_core">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.arcsinh_transformation_core">[docs]</a>
+<span class="k">def</span> <span class="nf">arcsinh_transformation_core</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">co_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">percentile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply arcsinh transformation using a co-factori or a percentile.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        The data to transform.</span>
+<span class="sd">    co_factor : float, optional</span>
+<span class="sd">        A fixed positive number to use as a co-factor for the</span>
+<span class="sd">        transformation.</span>
+<span class="sd">    percentile : float, optional</span>
+<span class="sd">        The percentile to determine the co-factor if co_factor is not</span>
+<span class="sd">        provided.</span>
+<span class="sd">        The percentile is computed for each feature (column)</span>
+<span class="sd">        individually.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The transformed data.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If both co_factor and percentile are None.</span>
+<span class="sd">        If both co_factor and percentile are specified.</span>
+<span class="sd">        If percentile is not in the range [0, 100].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">co_factor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either co_factor or percentile must be provided.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">co_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">percentile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Please specify either co_factor or percentile, not both.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">co_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">percentile</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Percentile should be between 0 and 100.&quot;</span><span class="p">)</span>
+        <span class="n">co_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">percentile</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Perform arcsinh transformation with special handling for zero co_factor</span>
+    <span class="c1"># If co_factor &gt; 0, apply arcsinh(data / co_factor)</span>
+    <span class="c1"># If co_factor == 0, apply arcsinh(data) to avoid division by zero</span>
+    <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">co_factor</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsinh</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="n">co_factor</span><span class="p">),</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">arcsinh</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">transformed_data</span></div>
+
+
+
+<div class="viewcode-block" id="z_score_normalization">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.z_score_normalization">[docs]</a>
+<span class="k">def</span> <span class="nf">z_score_normalization</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">output_layer</span><span class="p">,</span> <span class="n">input_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute z-scores for the provided AnnData object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : anndata.AnnData</span>
+<span class="sd">        The AnnData object containing the data to normalize.</span>
+<span class="sd">    output_layer : str</span>
+<span class="sd">        The name of the layer to store the computed z-scores.</span>
+<span class="sd">    input_layer : str, optional</span>
+<span class="sd">        The name of the layer in the AnnData object to normalize.</span>
+<span class="sd">        If None, the main data matrix .X is used.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Additional arguments to pass to scipy.stats.zscore.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check if the provided input_layer exists in the AnnData object</span>
+    <span class="k">if</span> <span class="n">input_layer</span><span class="p">:</span>
+        <span class="n">check_table</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">tables</span><span class="o">=</span><span class="n">input_layer</span><span class="p">)</span>
+        <span class="n">data_to_normalize</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">input_layer</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data_to_normalize</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+
+    <span class="c1"># Ensure data is in numpy array format</span>
+    <span class="n">data_to_normalize</span> <span class="o">=</span> <span class="n">data_to_normalize</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> \
+        <span class="k">if</span> <span class="n">issparse</span><span class="p">(</span><span class="n">data_to_normalize</span><span class="p">)</span> <span class="k">else</span> <span class="n">data_to_normalize</span>
+
+    <span class="c1"># Compute z-scores using scipy.stats.zscore</span>
+    <span class="n">normalized_data</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">zscore</span><span class="p">(</span>
+        <span class="n">data_to_normalize</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;omit&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Store the computed z-scores in the specified output_layer</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">output_layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">normalized_data</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span>
+        <span class="n">columns</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Print a message indicating that normalization is complete</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s1">&#39;Z-score normalization completed. &#39;</span>
+        <span class="sa">f</span><span class="s1">&#39;Data stored in layer &quot;</span><span class="si">{</span><span class="n">output_layer</span><span class="si">}</span><span class="s1">&quot;.&#39;</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="apply_per_batch">
+<a class="viewcode-back" href="../../spac.html#spac.transformations.apply_per_batch">[docs]</a>
+<span class="k">def</span> <span class="nf">apply_per_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">annotation</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a given function to data per batch, with additional parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        The data to transform.</span>
+<span class="sd">    annotation : np.ndarray</span>
+<span class="sd">        Batch annotations for each row in the data.</span>
+<span class="sd">    method : str</span>
+<span class="sd">        The function to apply to each batch. Options: &#39;arcsinh_transformation&#39;</span>
+<span class="sd">        or &#39;normalize_features&#39;.</span>
+
+<span class="sd">    kwargs:</span>
+<span class="sd">        Additional parameters to pass to the function.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        The transformed data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check data integrity</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span>
+                                                          <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data and annotation must be numpy arrays&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotation</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data and annotation must have the same number of &quot;</span>
+                         <span class="s2">&quot;rows&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data must be a 2D array&quot;</span><span class="p">)</span>
+
+    <span class="n">method_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;arcsinh_transformation&#39;</span><span class="p">:</span> <span class="n">arcsinh_transformation_core</span><span class="p">,</span>
+        <span class="s1">&#39;normalize_features&#39;</span><span class="p">:</span> <span class="n">normalize_features_core</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">method_dict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;method must be &#39;arcsinh_transformation&#39; or &quot;</span>
+                         <span class="s2">&quot;&#39;normalize_features&#39;&quot;</span><span class="p">)</span>
+
+    <span class="n">transform_function</span> <span class="o">=</span> <span class="n">method_dict</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
+
+    <span class="n">transformed_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">unique_batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">unique_batches</span><span class="p">:</span>
+        <span class="n">batch_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">annotation</span> <span class="o">==</span> <span class="n">batch</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">batch_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">batch_indices</span><span class="p">]</span>
+
+        <span class="n">normalized_batch_data</span> <span class="o">=</span> <span class="n">transform_function</span><span class="p">(</span><span class="n">batch_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">transformed_data</span><span class="p">[</span><span class="n">batch_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalized_batch_data</span>
+
+    <span class="k">return</span> <span class="n">transformed_data</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

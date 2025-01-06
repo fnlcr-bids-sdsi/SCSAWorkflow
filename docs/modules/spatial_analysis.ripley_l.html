@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/spatial_analysis.ripley_l.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="py function">
+<dt class="sig sig-object py" id="spac.spatial_analysis.ripley_l">
+<span class="sig-prename descclassname"><span class="pre">spac.spatial_analysis.</span></span><span class="sig-name descname"><span class="pre">ripley_l</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phenotypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spatial'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spac/spatial_analysis.html#ripley_l"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spac.spatial_analysis.ripley_l" title="Link to this definition"></a></dt>
+<dd><p>Calculate Ripley’s L statistic for spatial data in <cite>adata</cite>.</p>
+<p>Ripley’s L statistic is a spatial point pattern analysis metric that
+quantifies clustering or regularity in point patterns across various
+distances. This function calculates the statistic for each region in
+<cite>adata</cite> (if provided) or for all cells if regions are not specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>AnnData</em>) – The annotated data matrix containing the spatial coordinates and
+cell phenotypes.</p></li>
+<li><p><strong>annotation</strong> (<em>str</em>) – The key in <cite>adata.obs</cite> representing the annotation for cell phenotypes.</p></li>
+<li><p><strong>phenotypes</strong> (<em>list</em><em> of </em><em>str</em>) – A list containing two phenotypes for which the Ripley L statistic
+will be calculated. If the two phenotypes are the same, the
+calculation is done for the same type; if different, it considers
+interactions between the two.</p></li>
+<li><p><strong>distances</strong> (<em>array-like</em>) – An array of distances at which to calculate Ripley’s L statistic.
+The values must be positive and incremental.</p></li>
+<li><p><strong>regions</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The key in <cite>adata.obs</cite> representing regions for stratifying the
+data. If <cite>None</cite>, all cells will be treated as one region.</p></li>
+<li><p><strong>spatial_key</strong> (<em>str</em><em>, </em><em>optional</em>) – The key in <cite>adata.obsm</cite> representing the spatial coordinates.
+Default is <cite>“spatial”</cite>.</p></li>
+<li><p><strong>n_simulations</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of simulations to perform for significance testing. Default is 100.</p></li>
+<li><p><strong>area</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The area of the spatial region of interest. If <cite>None</cite>, the area
+will be inferred from the data. Default is <cite>None</cite>.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed for simulation reproducibility. Default is 42.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame containing the Ripley’s L results for each region or
+the entire dataset if <cite>regions</cite> is <cite>None</cite>. The DataFrame includes
+the following columns:
+- <cite>region</cite>: The region label or ‘all’ if no regions are specified.
+- <cite>center_phenotype</cite>: The first phenotype in <cite>phenotypes</cite>.
+- <cite>neighbor_phenotype</cite>: The second phenotype in <cite>phenotypes</cite>.
+- <cite>ripley_l</cite>: The Ripley’s L statistic calculated for the region.
+- <cite>config</cite>: A dictionary with configuration settings used for the calculation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Ripley’s L is an adjusted version of Ripley’s K that corrects for the
+inherent increase in point-to-point distances as the distance grows.
+This statistic is used to evaluate spatial clustering or dispersion
+of points (cells) in biological datasets.</p>
+<p>The function uses pre-defined distances and performs simulations to
+assess the significance of observed patterns. The results are stored
+in the <cite>.uns</cite> attribute of <cite>adata</cite> under the key <cite>‘ripley_l’</cite>, or in
+a new DataFrame if no prior results exist.</p>
+<p class="rubric">Examples</p>
+<p>Calculate Ripley’s L for two phenotypes in a single region dataset:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ripley_l</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="n">phenotypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="n">distances</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Calculate Ripley’s L for multiple regions in <cite>adata</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ripley_l</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="n">phenotypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="n">distances</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">regions</span><span class="o">=</span><span class="s1">&#39;region_key&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

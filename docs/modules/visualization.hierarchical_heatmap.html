@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/visualization.hierarchical_heatmap.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="py function">
+<dt class="sig sig-object py" id="spac.visualization.hierarchical_heatmap">
+<span class="sig-prename descclassname"><span class="pre">spac.visualization.</span></span><span class="sig-name descname"><span class="pre">hierarchical_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_feature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standard_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'annotation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swap_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spac/visualization.html#hierarchical_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spac.visualization.hierarchical_heatmap" title="Link to this definition"></a></dt>
+<dd><p>Generates a hierarchical clustering heatmap and dendrogram.
+By default, the dataset is assumed to have features as columns and
+annotations as rows. Cells are grouped by annotation (e.g., phenotype),
+and for each group, the average expression intensity of each feature
+(e.g., protein or marker) is computed. The heatmap is plotted using
+seaborn’s clustermap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>anndata.AnnData</em>) – The AnnData object.</p></li>
+<li><p><strong>annotation</strong> (<em>str</em>) – Name of the annotation in adata.obs to group by and calculate mean
+intensity.</p></li>
+<li><p><strong>features</strong> (<em>list</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – List of feature names (e.g., markers) to be included in the
+visualization. If None, all features are used. Default is None.</p></li>
+<li><p><strong>layer</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the <cite>adata</cite> layer to use to calculate the mean intensity.
+If not provided, uses the main matrix. Default is None.</p></li>
+<li><p><strong>cluster_feature</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, perform hierarchical clustering on the feature axis.
+Default is False.</p></li>
+<li><p><strong>cluster_annotations</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, perform hierarchical clustering on the annotations axis.
+Default is False.</p></li>
+<li><p><strong>standard_scale</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Whether to standard scale data (0: row-wise or 1: column-wise).
+Default is None.</p></li>
+<li><p><strong>z_score</strong> (<em>str</em><em>, </em><em>optional</em>) – Specifies the axis for z-score normalization. Can be “feature” or
+“annotation”. Default is “annotation”.</p></li>
+<li><p><strong>swap_axes</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, switches the axes of the heatmap, effectively transposing
+the dataset. By default (when False), annotations are on the vertical
+axis (rows) and features are on the horizontal axis (columns).
+When set to True, features will be on the vertical axis and
+annotations on the horizontal axis. Default is False.</p></li>
+<li><p><strong>rotate_label</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, rotate x-axis labels by 45 degrees. Default is False.</p></li>
+<li><p><strong>**kwargs</strong> – <p>Additional parameters passed to <cite>sns.clustermap</cite> function or its
+underlying functions. Some essential parameters include:
+- <cite>cmap</cite> : colormap</p>
+<blockquote>
+<div><p>Colormap to use for the heatmap. It’s an argument for the underlying
+<cite>sns.heatmap()</cite> used within <cite>sns.clustermap()</cite>. Examples include
+“viridis”, “plasma”, “coolwarm”, etc.</p>
+</div></blockquote>
+<ul>
+<li><p><cite>{row,col}_colors</cite> : Lists or DataFrames
+Colors to use for annotating the rows/columns. Useful for visualizing
+additional categorical information alongside the main heatmap.</p></li>
+<li><p><cite>{dendrogram,colors}_ratio</cite> : tuple(float)
+Control the size proportions of the dendrogram and the color labels
+relative to the main heatmap.</p></li>
+<li><p><cite>cbar_pos</cite> : tuple(float) or None
+Specify the position and size of the colorbar in the figure. If set
+to None, no colorbar will be added.</p></li>
+<li><p><cite>tree_kws</cite> : dict
+Customize the appearance of the dendrogram tree. Passes additional
+keyword arguments to the underlying
+<cite>matplotlib.collections.LineCollection</cite>.</p></li>
+<li><p><cite>method</cite> : str
+The linkage algorithm to use for the hierarchical clustering.
+Defaults to ‘centroid’ in the function, but can be changed.</p></li>
+<li><p><cite>metric</cite> : str
+The distance metric to use for the hierarchy. Defaults to ‘euclidean’
+in the function.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mean_intensity</strong> (<em>pandas.DataFrame</em>) – A DataFrame containing the mean intensity of cells for each annotation.</p></li>
+<li><p><strong>clustergrid</strong> (<em>seaborn.matrix.ClusterGrid</em>) – The seaborn ClusterGrid object representing the heatmap and
+dendrograms.</p></li>
+<li><p><strong>dendrogram_data</strong> (<em>dict</em>) – A dictionary containing hierarchical clustering linkage data for both
+rows and columns. These linkage matrices can be used to generate
+dendrograms with tools like scipy’s dendrogram function. This offers
+flexibility in customizing and plotting dendrograms as needed.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>import matplotlib.pyplot as plt
+import pandas as pd
+import anndata
+from spac.visualization import hierarchical_heatmap
+X = pd.DataFrame([[1, 2], [3, 4]], columns=[‘gene1’, ‘gene2’])
+annotation = pd.DataFrame([‘type1’, ‘type2’], columns=[‘cell_type’])
+all_data = anndata.AnnData(X=X, obs=annotation)</p>
+<dl class="simple">
+<dt>mean_intensity, clustergrid, dendrogram_data = hierarchical_heatmap(</dt><dd><p>all_data,
+“cell_type”,
+layer=None,
+z_score=”annotation”,
+swap_axes=True,
+cluster_feature=False,
+cluster_annotations=True</p>
+</dd>
+</dl>
+<p>)</p>
+<p># To display a standalone dendrogram using the returned linkage matrix:
+import scipy.cluster.hierarchy as sch
+import numpy as np
+import matplotlib.pyplot as plt</p>
+<p># Convert the linkage data to type double
+dendro_col_data = np.array(dendrogram_data[‘col_linkage’], dtype=np.double)</p>
+<p># Ensure the linkage matrix has at least two dimensions and
+more than one linkage
+if dendro_col_data.ndim == 2 and dendro_col_data.shape[0] &gt; 1:</p>
+<blockquote>
+<div><p>fig, ax = plt.subplots(figsize=(10, 7))
+sch.dendrogram(dendro_col_data, ax=ax)
+plt.title(‘Standalone Col Dendrogram’)
+plt.show()</p>
+</div></blockquote>
+<dl class="simple">
+<dt>else:</dt><dd><p>print(“Insufficient data to plot a dendrogram.”)</p>
+</dd>
+</dl>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

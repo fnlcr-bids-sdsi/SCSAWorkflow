@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/visualization.visualize_nearest_neighbor.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="py function">
+<dt class="sig sig-object py" id="spac.visualization.visualize_nearest_neighbor">
+<span class="sig-prename descclassname"><span class="pre">spac.visualization.</span></span><span class="sig-name descname"><span class="pre">visualize_nearest_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stratify_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spatial_distance'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_from</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facet_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spac/visualization.html#visualize_nearest_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spac.visualization.visualize_nearest_neighbor" title="Link to this definition"></a></dt>
+<dd><p>Visualize nearest-neighbor (spatial distance) data between groups of cells
+as numeric or distribution plots.</p>
+<p>This user-facing function assembles the data by calling
+<cite>_prepare_spatial_distance_data</cite> and then creates plots through
+<cite>_plot_spatial_distance_dispatch</cite>.</p>
+<dl class="simple">
+<dt>Plot arrangement logic:</dt><dd><ol class="arabic simple">
+<li><p>If stratify_by is not None and facet_plot=True =&gt; single figure
+with subplots (faceted).</p></li>
+<li><p>If stratify_by is not None and facet_plot=False =&gt; multiple separate
+figures, one per group.</p></li>
+<li><p>If stratify_by is None =&gt; a single figure with one plot.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>anndata.AnnData</em>) – Annotated data matrix with distances in <cite>adata.obsm[spatial_distance]</cite>.</p></li>
+<li><p><strong>annotation</strong> (<em>str</em>) – Column in <cite>adata.obs</cite> containing cell phenotypes or annotations.</p></li>
+<li><p><strong>stratify_by</strong> (<em>str</em><em>, </em><em>optional</em>) – Column in <cite>adata.obs</cite> used to group or stratify data (e.g. imageid).</p></li>
+<li><p><strong>spatial_distance</strong> (<em>str</em><em>, </em><em>optional</em>) – Key in <cite>adata.obsm</cite> storing the distance DataFrame. Default is
+‘spatial_distance’.</p></li>
+<li><p><strong>distance_from</strong> (<em>str</em>) – Reference phenotype from which distances are measured. Required.</p></li>
+<li><p><strong>distance_to</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Target phenotype(s) to measure distance to. If None, uses all
+available phenotypes.</p></li>
+<li><p><strong>facet_plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True (and stratify_by is not None), subplots in a single figure.
+Else, multiple or single figure(s).</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – For method=’numeric’: ‘box’, ‘violin’, ‘boxen’, etc.
+For method=’distribution’: ‘hist’, ‘kde’, ‘ecdf’, etc.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, applies np.log1p transform to the distance values.</p></li>
+<li><p><strong>method</strong> (<em>{'numeric'</em><em>, </em><em>'distribution'}</em>) – Determines the plotting style (catplot vs displot).</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional arguments for seaborn figure-level functions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>{</dt><dd><p>“data”: pd.DataFrame,  # Tidy DataFrame used for plotting
+“fig”: Figure or list[Figure]  # Single or multiple figures</p>
+</dd>
+</dl>
+<p>}</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required parameters are missing or invalid.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Numeric box plot comparing Tumor distances to multiple targets</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">visualize_nearest_neighbor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">adata</span><span class="o">=</span><span class="n">my_adata</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">annotation</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">stratify_by</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">spatial_distance</span><span class="o">=</span><span class="s1">&#39;spatial_distance&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distance_from</span><span class="o">=</span><span class="s1">&#39;Tumor&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distance_to</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Stroma&#39;</span><span class="p">,</span> <span class="s1">&#39;Immune&#39;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">facet_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;box&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;numeric&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_long</span><span class="p">,</span> <span class="n">fig</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;fig&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Distribution plot (kde) for a single target, single figure</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res2</span> <span class="o">=</span> <span class="n">visualize_nearest_neighbor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">adata</span><span class="o">=</span><span class="n">my_adata</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">annotation</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distance_from</span><span class="o">=</span><span class="s1">&#39;Tumor&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distance_to</span><span class="o">=</span><span class="s1">&#39;Stroma&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;distribution&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">plot_type</span><span class="o">=</span><span class="s1">&#39;kde&#39;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df_dist</span><span class="p">,</span> <span class="n">fig2</span> <span class="o">=</span> <span class="n">res2</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="n">res2</span><span class="p">[</span><span class="s2">&quot;fig&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

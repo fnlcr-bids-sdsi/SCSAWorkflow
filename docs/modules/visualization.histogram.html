@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; spac  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            spac
+          </a>
+              <div class="version">
+                0.8.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Analysis of SPAtial Single Cell Datasets (SPAC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">spac</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../spac.html">spac package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.data_utils">spac.data_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.phenotyping">spac.phenotyping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.spatial_analysis">spac.spatial_analysis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.transformations">spac.transformations module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.utils">spac.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac.visualization">spac.visualization module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../spac.html#module-spac">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">spac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/visualization.histogram.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="py function">
+<dt class="sig sig-object py" id="spac.visualization.histogram">
+<span class="sig-prename descclassname"><span class="pre">spac.visualization.</span></span><span class="sig-name descname"><span class="pre">histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">together</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_log_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_log_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spac/visualization.html#histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spac.visualization.histogram" title="Link to this definition"></a></dt>
+<dd><p>Plot the histogram of cells based on a specific feature from adata.X
+or annotation from adata.obs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>anndata.AnnData</em>) – The AnnData object.</p></li>
+<li><p><strong>feature</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of continuous feature from adata.X to plot its histogram.</p></li>
+<li><p><strong>annotation</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the annotation from adata.obs to plot its histogram.</p></li>
+<li><p><strong>layer</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the layer in adata.layers to plot its histogram.</p></li>
+<li><p><strong>group_by</strong> (<em>str</em><em>, </em><em>default None</em>) – Choose either to group the histogram by another column.</p></li>
+<li><p><strong>together</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, and if group_by != None, create one plot combining all groups.
+If False, create separate histograms for each group.
+The appearance of combined histograms can be controlled using the
+<cite>multiple</cite> and <cite>element</cite> parameters in <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs.
+To control how the histograms are normalized (e.g., to divide the
+histogram by the number of elements in every group), use the <cite>stat</cite>
+parameter in <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs. For example, set <cite>stat=”probability”</cite> to show
+the relative frequencies of each group.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – An existing Axes object to draw the plot onto, optional.</p></li>
+<li><p><strong>x_log_scale</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, the data will be transformed using np.log1p before plotting,
+and the x-axis label will be adjusted accordingly.</p></li>
+<li><p><strong>y_log_scale</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True, the y-axis will be set to log scale.</p></li>
+<li><p><strong>**kwargs</strong> – <p>Additional keyword arguments passed to seaborn histplot function.
+Key arguments include:
+- <cite>multiple</cite>: Determines how the subsets of data are displayed</p>
+<blockquote>
+<div><dl class="simple">
+<dt>on the same axes. Options include:</dt><dd><ul>
+<li><dl class="simple">
+<dt>”layer”: Draws each subset on top of the other</dt><dd><p>without adjustments.</p>
+</dd>
+</dl>
+</li>
+<li><p>”dodge”: Dodges bars for each subset side by side.</p></li>
+<li><p>”stack”: Stacks bars for each subset on top of each other.</p></li>
+<li><p>”fill”: Adjusts bar heights to fill the axes.</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt><cite>element</cite>: Determines the visual representation of the bins.</dt><dd><dl class="simple">
+<dt>Options include:</dt><dd><ul>
+<li><p>”bars”: Displays the typical bar-style histogram (default).</p></li>
+<li><p>”step”: Creates a step line plot without bars.</p></li>
+<li><dl class="simple">
+<dt>”poly”: Creates a polygon where the bottom edge represents</dt><dd><p>the x-axis and the top edge the histogram’s bins.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>log_scale</cite>: Determines if the data should be plotted on</dt><dd><p>a logarithmic scale.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>stat</cite>: Determines the statistical transformation to use on the data</dt><dd><dl class="simple">
+<dt>for the histogram. Options include:</dt><dd><ul>
+<li><p>”count”: Show the counts of observations in each bin.</p></li>
+<li><p>”frequency”: Show the number of observations divided
+by the bin width.</p></li>
+<li><dl class="simple">
+<dt>”density”: Normalize such that the total area of the histogram</dt><dd><p>equals 1.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>”probability”: Normalize such that each bar’s height reflects</dt><dd><p>the probability of observing that bin.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><cite>bins</cite>: Specification of hist bins.</dt><dd><p>Can be a number (indicating the number of bins) or a list
+(indicating bin edges). For example, <cite>bins=10</cite> will create 10 bins,
+while <cite>bins=[0, 1, 2, 3]</cite> will create bins [0,1), [1,2), [2,3].
+If not provided, the binning will be determined automatically.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fig</strong> (<em>matplotlib.figure.Figure</em>) – The created figure for the plot.</p></li>
+<li><p><strong>axs</strong> (<em>matplotlib.axes.Axes or list of Axes</em>) – The Axes object(s) of the histogram plot(s). Returns a single Axes
+if only one plot is created, otherwise returns a list of Axes.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Fang Liu, Rui He, and George Zaki.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
