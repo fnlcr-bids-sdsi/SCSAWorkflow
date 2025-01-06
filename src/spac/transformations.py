@@ -11,7 +11,9 @@ import umap as umap_lib
 from scipy.sparse import issparse
 from typing import List, Union, Optional
 from numpy.lib import NumpyVersion
-
+import multiprocessing
+import parmap
+from spac.utag_functions import utag
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
@@ -1059,3 +1061,106 @@ def apply_per_batch(data, annotation, method, **kwargs):
         transformed_data[batch_indices] = normalized_batch_data
 
     return transformed_data
+
+# utag clustering
+def run_utag_clustering(
+        adata,
+        features=None,
+        k=15,
+        resolution=1,
+        max_dist=20,
+        n_pcs=10,
+        random_state=42,
+        n_jobs=1,
+        n_iterations=5,
+        slide_key="Slide",
+        layer=None,
+        output_annotation="UTAG",
+        associated_table=None,
+        parallel=False,
+        **kwargs
+):
+    """
+    Run UTAG clustering on the AnnData object.
+
+    Parameters
+    ----------
+    adata : anndata.AnnData
+        The AnnData object.
+    features : list
+        List of features to use for clustering or for PCA. Default 
+        (None) is to use all.
+    k : int
+        The number of nearest neighbor to be used in creating the graph.
+        Default is 15.
+    resolution : float
+        Resolution parameter for the clustering, higher resolution produces 
+        more clusters. Default is 1.
+    max_dist : float
+        Maximum distance to cut edges within a graph. Default is 20.
+    n_principal_components : int
+        Number of principal components to use for clustering.
+    random_state : int
+        Random state for reproducibility.
+    n_jobs : int
+        Number of jobs to run in parallel. Default is 5.
+    n_iterations : int
+        Number of iterations for the clustering.
+    slide_key: str
+        Key of adata.obs containing information on the batch structure 
+        of the data.In general, for image data this will often be a variable 
+        indicating the imageb so image-specific effects are removed from data.
+        Default is "Slide".
+
+    Returns
+    -------
+    adata : anndata.AnnData
+        Updated AnnData object with clustering results.
+    """
+    resolutions = [resolution]
+    
+    _validate_transformation_inputs(
+        adata=adata,
+        layer=layer,
+        associated_table=associated_table,
+        features=features
+    )
+    
+    # add print the current k value
+    if not isinstance(k, int) or k <= 0:
+        raise ValueError(f"`k` must be a positive integer, but received {k}.")
+
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    if features is not None:
+        data = _select_input_features(
+        adata=adata,
+        layer=layer,
+        associated_table=associated_table,
+        features=features,)
+        adata_utag = adata[:, features].copy()
+        adata_utag.X = data
+    else:
+        adata_utag = adata.copy()
+    
+    utag_results = utag(
+        adata_utag,
+        slide_key=slide_key,
+        max_dist=max_dist,
+        normalization_mode='l1_norm',
+        apply_clustering=True,
+        clustering_method="leiden",
+        resolutions=resolutions,
+        leiden_kwargs={"n_iterations": n_iterations, 
+                       "random_state": random_state},
+        n_pcs=n_pcs,
+        parallel=parallel,
+        processes=n_jobs,
+        k=k,
+    )
+    # change camel case to snake 
+    curClusterCol = 'UTAG Label_leiden_' + str(resolution)
+    cluster_list = utag_results.obs[curClusterCol].copy()
+    adata.obs[output_annotation] = cluster_list.copy()
+    adata.uns["utag_features"] = features

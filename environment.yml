@@ -28,3 +28,4 @@ dependencies:
     - sphinx
     - flake8
     - gendocs
+    - parmap==1.7.0
